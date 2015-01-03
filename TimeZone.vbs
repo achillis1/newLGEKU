@@ -57,7 +57,7 @@ Public Function LocalTimeToUTC(dteTime As Date) As Date
       dteSystemTime.wSecond)
 End Function
 
-Public Function LocalTimeToEast(LocalTime As Date) As Date
+Public Function LocalTimeToET(LocalTime As Date) As Date
     Dim StartDST As Date
     Dim EndDST As Date
     Dim UTCTime As Date
@@ -71,9 +71,9 @@ Public Function LocalTimeToEast(LocalTime As Date) As Date
     End If
     
     If LocalTime >= StartDST And LocalTime <= EndDST Then
-        LocalTimeToEast = DateAdd("h", -4, UTCTime)
+        LocalTimeToET = DateAdd("h", -4, UTCTime)
     Else
-        LocalTimeToEast = DateAdd("h", -5, UTCTime)
+        LocalTimeToET = DateAdd("h", -5, UTCTime)
     End If
 End Function
 
