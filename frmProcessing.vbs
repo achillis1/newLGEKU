@@ -15,7 +15,7 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Private Sub cmdCancel_Click()
     Me.Hide
-    frmServiceCenter.Show
+    frmServiceCenter.Show vbModeless
 End Sub
 
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)

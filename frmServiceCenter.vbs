@@ -19,17 +19,17 @@ End Sub
 
 Private Sub cmdExport_Click()
     Me.Hide
-    frmExport.Show
+    frmExport.Show vbModeless
 End Sub
 
 Private Sub cmdImport_Click()
     Me.Hide
-    frmImport.Show
+    frmImport.Show vbModeless
 End Sub
 
 Private Sub cmdProcessing_Click()
     Me.Hide
-    frmProcessing.Show
+    frmProcessing.Show vbModeless
 End Sub
 
 Private Sub UserForm_Initialize()

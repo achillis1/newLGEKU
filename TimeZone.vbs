@@ -62,14 +62,10 @@ Public Function LocalTimeToET(LocalTime As Date) As Date
     Dim EndDST As Date
     Dim UTCTime As Date
     UTCTime = LocalTimeToUTC(LocalTime)
-    If Year(LocalTime) < 2007 Then
-        StartDST = DateAdd("h", 2, NthWeekday(1, 1, 4, Year(LocalTime)))
-        EndDST = DateAdd("h", 2, NthWeekday("L", 1, 10, Year(LocalTime)))
-    Else
-        StartDST = DateAdd("h", 2, NthWeekday(2, 1, 3, Year(LocalTime)))
-        EndDST = DateAdd("h", 2, NthWeekday(1, 1, 11, Year(LocalTime)))
-    End If
-    
+
+    StartDST = DateAdd("h", 2, NthWeekday(2, 1, 3, Year(LocalTime)))
+    EndDST = DateAdd("h", 2, NthWeekday(1, 1, 11, Year(LocalTime)))
+
     If LocalTime >= StartDST And LocalTime <= EndDST Then
         LocalTimeToET = DateAdd("h", -4, UTCTime)
     Else

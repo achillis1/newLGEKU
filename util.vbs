@@ -1,12 +1,12 @@
 Attribute VB_Name = "util"
 
 Sub test1()
-    frmServiceCenter.Show
+    frmServiceCenter.Show vbModeless
 
 End Sub
 
 Sub testimport()
-    frmImport.Show
+    frmImport.Show vbModeless
 End Sub
 
 

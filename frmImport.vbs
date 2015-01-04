@@ -21,7 +21,7 @@ End Sub
 
 Private Sub cmdCancel_Click()
     Me.Hide
-    frmServiceCenter.Show
+    frmServiceCenter.Show vbModeless
 End Sub
 
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
@@ -37,7 +37,7 @@ Private Sub cmdImport_Click()
 End Sub
 
 Private Sub UserForm_Terminate()
-    frmServiceCenter.Show
+    frmServiceCenter.Show vbModeless
 End Sub
 
 Sub importfile(ByVal importfile As String)
@@ -75,7 +75,7 @@ Sub importfile(ByVal importfile As String)
     Next k
 
     If flgImport Then
-        MsgBox "Import found errors! Please check the OUT enrollment file."
+        MsgBox "Import was cancelled due to errors! Please check the OUT enrollment file."
     Else
         MsgBox "Import is completed."
     End If
@@ -189,9 +189,11 @@ Sub parseenrollment(ByVal str1 As String, ByRef flg As Boolean)
     Worksheets("Enrollments").Cells(lastrow, NexantEnrollments.Remit_to_Contact_mobile_phone).NumberFormat = "@"
     Worksheets("Enrollments").Cells(lastrow, NexantEnrollments.Remit_to_Contact_mobile_phone).Value = x(LGEEnrollments.Remit_to_Contact_mobile_phone)
 
-    Worksheets("Enrollments").Cells(lastrow, NexantEnrollments.Status_Date_ROSA) = Format(Now(), "YYYYMMDD")
-    Worksheets("Enrollments").Cells(lastrow, NexantEnrollments.Status_Time_ROSA) = Format(Now(), "YYYYMMDD") + ":" + Format(Now(), "HHMMSS")
-    Select Case x(LGEEnrollments.Enrollment_ID) 'Transaction Type
+    Worksheets("Enrollments").Cells(lastrow, NexantEnrollments.Status_Date_ROSA).NumberFormat = "@"
+    Worksheets("Enrollments").Cells(lastrow, NexantEnrollments.Status_Date_ROSA) = Format(LocalTimeToET(Now()), "YYYYMMDD")
+    Worksheets("Enrollments").Cells(lastrow, NexantEnrollments.Status_Time_ROSA).NumberFormat = "@"
+    Worksheets("Enrollments").Cells(lastrow, NexantEnrollments.Status_Time_ROSA) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+    Select Case x(LGEEnrollments.Transaction_Type) 'Transaction Type
         Case "N"
             Worksheets("Enrollments").Cells(lastrow, NexantEnrollments.Status_ROSA) = "RECEIVED AT VENDOR"
         Case "U"
