@@ -8,7 +8,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Public Enum LGEUsage
-    Record_Type
+    Record_Type = 0
     Transaction_Type
     Enrollment_ID
     Premise_ID
@@ -19,7 +19,7 @@ Public Enum LGEUsage
     Taxes_and_Fees
     PF_On_Peak_Electric
     Power_Factor_on_adjustment_Electric
-    Energy_Consumption_
+    Energy_Consumption
     KW_Billed_on_Demand_Electric
     Average_Temperature
     Heating_degree_days
