@@ -145,6 +145,7 @@ Private Sub importfile()
                     If ir = 0 Then
                         If OUTReportType = "OUTBOUND ENROLLMENT" Then
                             ir = lastrow + 1
+                            If ShortProgramName = "HEAP" Then MsgBox "FYI, the HEAP enrollment ID " + CStr(enrollmentID) + " doesn't exist."
                         Else
                             MsgBox "The enrollment ID " + CStr(enrollmentID) + " is not found. Please import the enrollment OUT file first."
                             Exit Sub
@@ -172,8 +173,6 @@ End Sub
 
 Private Sub parseenrollment(ByRef x() As String, ByVal ir As Integer, ByVal pn As String)
 
-    'Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.).Value=x(LGEEnrollments.Record_Type)
-    'Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.).Value=x(LGEEnrollments.Transaction_Type)
     If pn = "ROSA" Then
         Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Enrollment_ID_ROSA).NumberFormat = "@"
         Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Enrollment_ID_ROSA).Value = x(LGEEnrollments.Enrollment_ID)
