@@ -13,17 +13,6 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-Private EnrollmentFirstDataLine As Integer
-Private ImportSheetName As String
-Private PMSheetName As String
-Private InboundLastReadCol As Integer
-    
-Private Sub UserForm_Initialize()
-    EnrollmentFirstDataLine = 11
-    ImportSheetName = "Enrollments"
-    PMSheetName = "PM"
-    InboundLastReadCol = 5
-End Sub
 
 Private Sub cmdCancel_Click()
     Me.Hide
@@ -104,30 +93,30 @@ Private Sub importfile()
         End If
     
         x = Split(str(k), ",")
-        Dim enrollmentID As String
-        enrollmentID = x(LGEEnrollments.Enrollment_ID) 'or LGEUsage.Enrollment_ID
+        Dim EnrollmentID As String
+        EnrollmentID = x(LGEEnrollments.Enrollment_ID) 'or LGEUsage.Enrollment_ID
         
         Dim TransactionType As String
         TransactionType = x(LGEEnrollments.Transaction_Type) ' or LGEUsage.Transaction_Type
         
-        Dim RosaID As String
-        Dim HeapID As String
+        Dim ROSAID As String
+        Dim HEAPID As String
         Dim ir As Integer
         ir = 0
         If lastrow = EnrollmentFirstDataLine - 1 Then
             ir = EnrollmentFirstDataLine
         Else
             For i = EnrollmentFirstDataLine To lastrow
-                RosaID = Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_ROSA).Value
-                HeapID = Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_HEAP).Value
-                If RosaID = "" And HeapID <> "" Then existingID = HeapID
-                If RosaID <> "" And HeapID = "" Then existingID = RosaID
+                ROSAID = Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_ROSA).Value
+                HEAPID = Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_HEAP).Value
+                If ROSAID = "" And HEAPID <> "" Then existingID = HEAPID
+                If ROSAID <> "" And HEAPID = "" Then existingID = ROSAID
                 
-                If existingID = enrollmentID Then
+                If existingID = EnrollmentID Then
                     Select Case TransactionType
                         Case "N"
                             If OUTReportType = "OUTBOUND ENROLLMENT" Then '  Or OUTReportType = "OUTBOUND USAGE"
-                                MsgBox "The enrollment ID exists. Please check the Enrollment ID: " + CStr(enrollmentID)
+                                MsgBox "The enrollment ID exists. Please check the Enrollment ID: " + CStr(EnrollmentID)
                                 Exit Sub
                             Else
                                 ir = i
@@ -145,15 +134,15 @@ Private Sub importfile()
                     If ir = 0 Then
                         If OUTReportType = "OUTBOUND ENROLLMENT" Then
                             ir = lastrow + 1
-                            If ShortProgramName = "HEAP" Then MsgBox "FYI, the HEAP enrollment ID " + CStr(enrollmentID) + " doesn't exist."
+                            If ShortProgramName = "HEAP" Then MsgBox "FYI, the HEAP enrollment ID " + CStr(EnrollmentID) + " doesn't exist."
                         Else
-                            MsgBox "The enrollment ID " + CStr(enrollmentID) + " is not found. Please import the enrollment OUT file first."
+                            MsgBox "The enrollment ID " + CStr(EnrollmentID) + " is not found. Please import the enrollment OUT file first."
                             Exit Sub
                         End If
                     End If
                 Case "U"
                     If ir = 0 Then
-                        MsgBox "The enrollment ID " + CStr(enrollmentID) + " is not found. Please check the Enrollment ID and the Transaction Type " + x(LGEEnrollments.Transaction_Type) + "."
+                        MsgBox "The enrollment ID " + CStr(EnrollmentID) + " is not found. Please check the Enrollment ID and the Transaction Type " + x(LGEEnrollments.Transaction_Type) + "."
                         Exit Sub
                     End If
             End Select

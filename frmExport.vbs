@@ -18,8 +18,6 @@ Private Sub cmdCancel_Click()
     frmServiceCenter.Show vbModeless
 End Sub
 
-
-
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
     If CloseMode = 0 Then
         Cancel = True

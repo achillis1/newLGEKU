@@ -12,5 +12,5 @@ Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, Cancel As Boolean)
 End Sub
 
 Private Sub Workbook_Open()
-    frmServiceCenter.Show vbModeless
+    'frmServiceCenter.Show vbModeless
 End Sub

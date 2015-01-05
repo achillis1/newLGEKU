@@ -1,10 +1,10 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmServiceCenter 
    Caption         =   "Service Center"
-   ClientHeight    =   1590
+   ClientHeight    =   5655
    ClientLeft      =   45
    ClientTop       =   375
-   ClientWidth     =   4260
+   ClientWidth     =   2295
    OleObjectBlob   =   "frmServiceCenter.frx":0000
    StartUpPosition =   1  'CenterOwner
 End
@@ -13,7 +13,13 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+Private Sub cmdAdmin_Click()
+    Me.Hide
+    frmAdmin.Show vbModeless
+End Sub
+
 Private Sub cmdExit_Click()
+    Application.Visible = True
     ThisWorkbook.Close
 End Sub
 
@@ -32,8 +38,16 @@ Private Sub cmdProcessing_Click()
     frmProcessing.Show vbModeless
 End Sub
 
+
+
 Private Sub UserForm_Initialize()
-    Application.Visible = False
+'    Application.Visible = False
+    
+    EnrollmentFirstDataLine = 11
+    ImportSheetName = "Enrollments"
+    PMSheetName = "PM"
+    InboundLastReadCol = 5
+    currentEnrollment = ""
 End Sub
 
 Private Sub UserForm_Terminate()
