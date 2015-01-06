@@ -49,3 +49,9 @@ Next x
 
 End Sub
 
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+    If CloseMode = 0 Then
+        Cancel = True
+        MsgBox "The X is disabled, please use a button on the form.", vbCritical
+    End If
+End Sub
