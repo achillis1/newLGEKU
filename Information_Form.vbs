@@ -1,10 +1,10 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} Information_Form 
    Caption         =   "Information"
-   ClientHeight    =   9195
+   ClientHeight    =   6270
    ClientLeft      =   45
    ClientTop       =   375
-   ClientWidth     =   28110
+   ClientWidth     =   14220
    OleObjectBlob   =   "Information_Form.frx":0000
    ShowModal       =   0   'False
    StartUpPosition =   1  'CenterOwner
@@ -14,6 +14,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
 
 Private Sub Account_Number_Exit(ByVal Cancel As MSForms.ReturnBoolean)
 If Len(Account_Number) = 12 And IsNumeric(Account_Number) = True Then
@@ -31,7 +32,8 @@ End If
 End Sub
 
 Private Sub Cancel_Click()
-Unload Me
+Me.Hide
+frmAdmin.Show vbModeless
 
 End Sub
 
@@ -107,10 +109,6 @@ End If
 End Sub
 
 
-
-Private Sub Frame1_Click()
-
-End Sub
 
 Private Sub Mailing_Zipcode_exit(ByVal Cancel As MSForms.ReturnBoolean)
 If Len(Mailing_Zipcode) = 5 And IsNumeric(Mailing_Zipcode) Then
@@ -293,15 +291,68 @@ End Sub
 Private Sub Save_Click()
 Dim TimeandDate As String
 Dim Result As Double
-Dim Enrollment_ID_ROSA As Double
+Dim Enrollment_ID_ROSA As String
+Dim HeadingOffset As Double
+Dim LastRow As String
+
+Enrollment_ID_ROSA = "000000613312"
+
+HeadingOffset = 10
+
+LastRow = Cells(Rows.Count, 2).End(xlUp).Row
+Result = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range(Cells(11, NexantEnrollments.Enrollment_ID_ROSA), Cells(LastRow, NexantEnrollments.Enrollment_ID_ROSA))) + HeadingOffset
+
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Last_Modified_Date_Enrollment) = Format(LocalTimeToET(Now()), "yyyymmdd:hhmmss")
 
 
-Enrollment_ID_ROSA = currentEnrollment
 
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Account_Number) = Account_Number.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.CFM_Reduction) = CFM_Reduction.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Company_Acronym) = Company_Acronym.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Company_Code) = Company_Code.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Contact_Name) = Contact_Name.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Customer_Email) = Customer_Email.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Customer_Home_Phone) = Customer_Home_Phone.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Customer_mobile_phone) = Customer_mobile_phone.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Mailing_Zipcode) = Mailing_Zipcode.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Mailing_City) = Mailing_City.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Mailing_State) = Mailing_State.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Mailing_Street_Address) = Mailing_Street_Address.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Main_Account_Flag) = Main_Account_Flag.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Premise_ID) = Premise_ID.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Premise_Type) = Premise_Type.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Primary_Contact_Address) = Primary_Contact_Address.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Primary_Contact_Address_City) = Primary_Contact_Address_City.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Primary_Contact_Address_State) = Primary_Contact_Address_State.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Primary_Contact_Address_Zip) = Primary_Contact_Address_Zip.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Primary_Contact_Email) = Primary_Contact_Email.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Primary_Contact_mobile_phone) = Primary_Contact_mobile_phone.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Primary_contact_name) = Primary_contact_name.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Primary_Contact_Phone) = Primary_Contact_Phone.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Primary_Contact_phone_extension) = Primary_Contact_phone_extension.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Reason_for_audit) = Reason_for_audit.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Remit_to_Contact_Address) = Remit_to_Contact_Address.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Remit_to_Contact_Address_City) = Remit_to_Contact_Address_City.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Remit_to_Contact_Address_State) = Remit_to_Contact_Address_State.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Remit_to_Contact_Address_Zip) = Remit_to_Contact_Address_Zip.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Remit_to_Contact_Email) = Remit_to_Contact_Email.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Remit_to_Contact_mobile_phone) = Remit_to_Contact_mobile_phone.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Remit_to_Contact_Name) = Remit_to_Contact_Name.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Remit_to_Contact_Phone) = Remit_to_Contact_Phone.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Remit_to_Contact_phone_extension) = Remit_to_Contact_phone_extension.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Residence_Building_Class) = Residence_Building_Class.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Residence_Building_Type) = Residence_Building_Type.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Send_Report_to_Primary_Contact) = Send_Report_to_Primary_Contact.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Service_City) = Service_City.Value
+'Sheets("Enrollments").Cells(result,NexantEnrollments.Service_Class)=Service_Class.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Service_customer_name) = Service_customer_name.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Service_State) = Service_State.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Service_Street_Address) = Service_Street_Address.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Service_Zipcode) = Service_Zipcode.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Verification_Class) = Verification_Class.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.VKONT) = VKONT.Value
+Sheets("Enrollments").Cells(Result, NexantEnrollments.Year_building_constructed) = Year_building_constructed.Value
 
-Result = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range("B1", "B" & Range("B" & Rows.Count).End(xlUp).Row), 0)
-
-Sheets("Enrollments").Cells(Result, 12) = Format(ConvertLocalToGMT(Now(), True), "yyyymmdd:hhmmss")
 
 
 
@@ -338,57 +389,122 @@ Dim Enrollment_ID_ROSA As String
 Dim ColumnHeadings(46) As String
 Dim ColumnValues(46) As String
 Dim counter As Double
+Dim LastRow As String
+Dim HeadingOffset As Double
+
+HeadingOffset = 10
 
 Enrollment_ID_ROSA = currentEnrollment
-Result = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range("B1", "B" & Range("B" & Rows.Count).End(xlUp).Row), 0)
+
+If Enrollment_ID_ROSA <> "" Then
+LastRow = Cells(Rows.Count, 2).End(xlUp).Row
+Result = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range(Cells(11, NexantEnrollments.Enrollment_ID_ROSA), Cells(LastRow, NexantEnrollments.Enrollment_ID_ROSA))) + HeadingOffset
+
+'Result = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range("B1", "B" & Range("B" & Rows.Count).End(xlUp).Row), 0)
+Else
+
+End If
+
+If Result <> 0 Then
+
+Account_Number.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Account_Number)
+CFM_Reduction.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.CFM_Reduction)
+Company_Acronym.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Company_Acronym)
+Company_Code.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Company_Code)
+Contact_Name.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Contact_Name)
+Customer_Email.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Customer_Email)
+Customer_Home_Phone.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Customer_Home_Phone)
+Customer_mobile_phone.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Customer_mobile_phone)
+Mailing_Zipcode.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Mailing_Zipcode)
+Mailing_City.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Mailing_City)
+Mailing_State.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Mailing_State)
+Mailing_Street_Address.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Mailing_Street_Address)
+Main_Account_Flag.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Main_Account_Flag)
+Premise_ID.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Premise_ID)
+Premise_Type.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Premise_Type)
+Primary_Contact_Address.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Primary_Contact_Address)
+Primary_Contact_Address_City.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Primary_Contact_Address_City)
+Primary_Contact_Address_State.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Primary_Contact_Address_State)
+Primary_Contact_Address_Zip.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Primary_Contact_Address_Zip)
+Primary_Contact_Email.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Primary_Contact_Email)
+Primary_Contact_mobile_phone.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Primary_Contact_mobile_phone)
+Primary_contact_name.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Primary_contact_name)
+Primary_Contact_Phone.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Primary_Contact_Phone)
+Primary_Contact_phone_extension.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Primary_Contact_phone_extension)
+Reason_for_audit.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Reason_for_audit)
+Remit_to_Contact_Address.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Remit_to_Contact_Address)
+Remit_to_Contact_Address_City.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Remit_to_Contact_Address_City)
+Remit_to_Contact_Address_State.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Remit_to_Contact_Address_State)
+Remit_to_Contact_Address_Zip.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Remit_to_Contact_Address_Zip)
+Remit_to_Contact_Email.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Remit_to_Contact_Email)
+Remit_to_Contact_mobile_phone.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Remit_to_Contact_mobile_phone)
+Remit_to_Contact_Name.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Remit_to_Contact_Name)
+Remit_to_Contact_Phone.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Remit_to_Contact_Phone)
+Remit_to_Contact_phone_extension.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Remit_to_Contact_phone_extension)
+Residence_Building_Class.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Residence_Building_Class)
+Residence_Building_Type.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Residence_Building_Type)
+Send_Report_to_Primary_Contact.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Send_Report_to_Primary_Contact)
+Service_City.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Service_City)
+'Service_Class.Value = Sheets("Enrollments").Cells(result,NexantEnrollments.Service_Class)
+Service_customer_name.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Service_customer_name)
+Service_State.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Service_State)
+Service_Street_Address.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Service_Street_Address)
+Service_Zipcode.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Service_Zipcode)
+Verification_Class.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Verification_Class)
+VKONT.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.VKONT)
+Year_building_constructed.Value = Sheets("Enrollments").Cells(Result, NexantEnrollments.Year_building_constructed)
 
 
-Account_Number.Value = Sheets("Enrollments").Cells(Result, 4)
-CFM_Reduction.Value = Sheets("Enrollments").Cells(Result, 5)
-Company_Acronym.Value = Sheets("Enrollments").Cells(Result, 6)
-Company_Code.Value = Sheets("Enrollments").Cells(Result, 7)
-Contact_Name.Value = Sheets("Enrollments").Cells(Result, 8)
-Customer_Email.Value = Sheets("Enrollments").Cells(Result, 9)
-Customer_Home_Phone.Value = Sheets("Enrollments").Cells(Result, 10)
-Customer_mobile_phone.Value = Sheets("Enrollments").Cells(Result, 11)
-Mailing_Zipcode.Value = Sheets("Enrollments").Cells(Result, 13)
-Mailing_City.Value = Sheets("Enrollments").Cells(Result, 14)
-Mailing_State.Value = Sheets("Enrollments").Cells(Result, 15)
-Mailing_Street_Address.Value = Sheets("Enrollments").Cells(Result, 16)
-Main_Account_Flag.Value = Sheets("Enrollments").Cells(Result, 17)
-Premise_ID.Value = Sheets("Enrollments").Cells(Result, 18)
-Premise_Type.Value = Sheets("Enrollments").Cells(Result, 19)
-Primary_Contact_Address.Value = Sheets("Enrollments").Cells(Result, 20)
-Primary_Contact_Address_City.Value = Sheets("Enrollments").Cells(Result, 21)
-Primary_Contact_Address_State.Value = Sheets("Enrollments").Cells(Result, 22)
-Primary_Contact_Address_Zip.Value = Sheets("Enrollments").Cells(Result, 23)
-Primary_Contact_Email.Value = Sheets("Enrollments").Cells(Result, 24)
-Primary_Contact_mobile_phone.Value = Sheets("Enrollments").Cells(Result, 25)
-Primary_contact_name.Value = Sheets("Enrollments").Cells(Result, 26)
-Primary_Contact_Phone.Value = Sheets("Enrollments").Cells(Result, 27)
-Primary_Contact_phone_extension.Value = Sheets("Enrollments").Cells(Result, 28)
-Reason_for_audit.Value = Sheets("Enrollments").Cells(Result, 29)
-Remit_to_Contact_Address.Value = Sheets("Enrollments").Cells(Result, 30)
-Remit_to_Contact_Address_City.Value = Sheets("Enrollments").Cells(Result, 31)
-Remit_to_Contact_Address_State.Value = Sheets("Enrollments").Cells(Result, 32)
-Remit_to_Contact_Address_Zip.Value = Sheets("Enrollments").Cells(Result, 33)
-Remit_to_Contact_Email.Value = Sheets("Enrollments").Cells(Result, 34)
-Remit_to_Contact_mobile_phone.Value = Sheets("Enrollments").Cells(Result, 35)
-Remit_to_Contact_Name.Value = Sheets("Enrollments").Cells(Result, 36)
-Remit_to_Contact_Phone.Value = Sheets("Enrollments").Cells(Result, 37)
-Remit_to_Contact_phone_extension.Value = Sheets("Enrollments").Cells(Result, 38)
-Residence_Building_Class.Value = Sheets("Enrollments").Cells(Result, 39)
-Residence_Building_Type.Value = Sheets("Enrollments").Cells(Result, 40)
-Send_Report_to_Primary_Contact.Value = Sheets("Enrollments").Cells(Result, 41)
-Service_City.Value = Sheets("Enrollments").Cells(Result, 42)
-'Service_Class.Value = Sheets("Enrollments").Cells(result, 43)
-Service_customer_name.Value = Sheets("Enrollments").Cells(Result, 44)
-Service_State.Value = Sheets("Enrollments").Cells(Result, 45)
-Service_Street_Address.Value = Sheets("Enrollments").Cells(Result, 46)
-Service_Zipcode.Value = Sheets("Enrollments").Cells(Result, 47)
-Verification_Class.Value = Sheets("Enrollments").Cells(Result, 48)
-VKONT.Value = Sheets("Enrollments").Cells(Result, 49)
-Year_building_constructed.Value = Sheets("Enrollments").Cells(Result, 50)
+
+
+
+'Account_Number.Value = Sheets("Enrollments").Cells(Result, 4)
+'CFM_Reduction.Value = Sheets("Enrollments").Cells(Result, 5)
+'Company_Acronym.Value = Sheets("Enrollments").Cells(Result, 6)
+'Company_Code.Value = Sheets("Enrollments").Cells(Result, 7)
+'Contact_Name.Value = Sheets("Enrollments").Cells(Result, 8)
+'Customer_Email.Value = Sheets("Enrollments").Cells(Result, 9)
+'Customer_Home_Phone.Value = Sheets("Enrollments").Cells(Result, 10)
+'Customer_mobile_phone.Value = Sheets("Enrollments").Cells(Result, 11)
+'Mailing_Zipcode.Value = Sheets("Enrollments").Cells(Result, 13)
+'Mailing_City.Value = Sheets("Enrollments").Cells(Result, 14)
+'Mailing_State.Value = Sheets("Enrollments").Cells(Result, 15)
+'Mailing_Street_Address.Value = Sheets("Enrollments").Cells(Result, 16)
+'Main_Account_Flag.Value = Sheets("Enrollments").Cells(Result, 17)
+'Premise_ID.Value = Sheets("Enrollments").Cells(Result, 18)
+'Premise_Type.Value = Sheets("Enrollments").Cells(Result, 19)
+'Primary_Contact_Address.Value = Sheets("Enrollments").Cells(Result, 20)
+'Primary_Contact_Address_City.Value = Sheets("Enrollments").Cells(Result, 21)
+'Primary_Contact_Address_State.Value = Sheets("Enrollments").Cells(Result, 22)
+'Primary_Contact_Address_Zip.Value = Sheets("Enrollments").Cells(Result, 23)
+'Primary_Contact_Email.Value = Sheets("Enrollments").Cells(Result, 24)
+'Primary_Contact_mobile_phone.Value = Sheets("Enrollments").Cells(Result, 25)
+'Primary_contact_name.Value = Sheets("Enrollments").Cells(Result, 26)
+'Primary_Contact_Phone.Value = Sheets("Enrollments").Cells(Result, 27)
+'Primary_Contact_phone_extension.Value = Sheets("Enrollments").Cells(Result, 28)
+'Reason_for_audit.Value = Sheets("Enrollments").Cells(Result, 29)
+'Remit_to_Contact_Address.Value = Sheets("Enrollments").Cells(Result, 30)
+'Remit_to_Contact_Address_City.Value = Sheets("Enrollments").Cells(Result, 31)
+'Remit_to_Contact_Address_State.Value = Sheets("Enrollments").Cells(Result, 32)
+'Remit_to_Contact_Address_Zip.Value = Sheets("Enrollments").Cells(Result, 33)
+'Remit_to_Contact_Email.Value = Sheets("Enrollments").Cells(Result, 34)
+'Remit_to_Contact_mobile_phone.Value = Sheets("Enrollments").Cells(Result, 35)
+'Remit_to_Contact_Name.Value = Sheets("Enrollments").Cells(Result, 36)
+'Remit_to_Contact_Phone.Value = Sheets("Enrollments").Cells(Result, 37)
+'Remit_to_Contact_phone_extension.Value = Sheets("Enrollments").Cells(Result, 38)
+'Residence_Building_Class.Value = Sheets("Enrollments").Cells(Result, 39)
+'Residence_Building_Type.Value = Sheets("Enrollments").Cells(Result, 40)
+'Send_Report_to_Primary_Contact.Value = Sheets("Enrollments").Cells(Result, 41)
+'Service_City.Value = Sheets("Enrollments").Cells(Result, 42)
+''Service_Class.Value = Sheets("Enrollments").Cells(result, 43)
+'Service_customer_name.Value = Sheets("Enrollments").Cells(Result, 44)
+'Service_State.Value = Sheets("Enrollments").Cells(Result, 45)
+'Service_Street_Address.Value = Sheets("Enrollments").Cells(Result, 46)
+'Service_Zipcode.Value = Sheets("Enrollments").Cells(Result, 47)
+'Verification_Class.Value = Sheets("Enrollments").Cells(Result, 48)
+'VKONT.Value = Sheets("Enrollments").Cells(Result, 49)
+'Year_building_constructed.Value = Sheets("Enrollments").Cells(Result, 50)
+End If
 
 'Sheets("Enrollments").Cells(Result, 12) = Format(ConvertLocalToGMT(Now(), True), "yyyymmdd:hhmmss")
 

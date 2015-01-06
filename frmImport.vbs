@@ -1,10 +1,10 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmImport 
    Caption         =   "Import"
-   ClientHeight    =   1575
+   ClientHeight    =   1725
    ClientLeft      =   45
    ClientTop       =   375
-   ClientWidth     =   5370
+   ClientWidth     =   5430
    OleObjectBlob   =   "frmImport.frx":0000
    StartUpPosition =   1  'CenterOwner
 End
@@ -82,12 +82,12 @@ Private Sub importfile()
     
         Dim lastROSA As Integer
         Dim lastHEAP As Integer
-        Dim lastrow As Integer
+        Dim LastRow As Integer
         lastROSA = Worksheets(ImportSheetName).Range("B" & Rows.Count).End(xlUp).Row
         lastHEAP = Worksheets(ImportSheetName).Range("C" & Rows.Count).End(xlUp).Row
-        lastrow = WorksheetFunction.Max(lastROSA, lastHEAP)
+        LastRow = WorksheetFunction.Max(lastROSA, lastHEAP)
         
-        If lastrow < EnrollmentFirstDataLine - 1 Then
+        If LastRow < EnrollmentFirstDataLine - 1 Then
             MsgBox "The " + ImportSheetName + " data has errors. Please contact the developer."
             Exit Sub
         End If
@@ -103,10 +103,10 @@ Private Sub importfile()
         Dim HEAPID As String
         Dim ir As Integer
         ir = 0
-        If lastrow = EnrollmentFirstDataLine - 1 Then
+        If LastRow = EnrollmentFirstDataLine - 1 Then
             ir = EnrollmentFirstDataLine
         Else
-            For i = EnrollmentFirstDataLine To lastrow
+            For i = EnrollmentFirstDataLine To LastRow
                 ROSAID = Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_ROSA).Value
                 HEAPID = Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_HEAP).Value
                 If ROSAID = "" And HEAPID <> "" Then existingID = HEAPID
@@ -133,7 +133,7 @@ Private Sub importfile()
                 Case "N"
                     If ir = 0 Then
                         If OUTReportType = "OUTBOUND ENROLLMENT" Then
-                            ir = lastrow + 1
+                            ir = LastRow + 1
                             If ShortProgramName = "HEAP" Then MsgBox "FYI, the HEAP enrollment ID " + CStr(EnrollmentID) + " doesn't exist."
                         Else
                             MsgBox "The enrollment ID " + CStr(EnrollmentID) + " is not found. Please import the enrollment OUT file first."

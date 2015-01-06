@@ -13,7 +13,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-Public lastrow As Integer
+Public LastRow As Integer
 
 Private Sub cmdCancel_Click()
     Me.Hide
@@ -46,9 +46,13 @@ Private Sub cmdReset_Click()
     txtEnrollment.Text = ""
     cmdROSA.Enabled = False
     cmdHeap.Enabled = False
-    
+    cmdInfo.Enabled = False
+    cmdMeasure.Enabled = False
+    cmdUsage.Enabled = False
+    cmdContextual.Enabled = False
     lstEnrollments.Clear
-    For i = EnrollmentFirstDataLine To lastrow
+    
+    For i = EnrollmentFirstDataLine To LastRow
         ROSAID = Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_ROSA).Value
         HEAPID = Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_HEAP).Value
         If ROSAID = "" And HEAPID <> "" Then existingID = HEAPID + "-HEAP"
@@ -86,7 +90,7 @@ Private Sub cmdSearch_Click()
         EnrollmentID = CLng(txtEnrollment.Text)
         Dim flag As Boolean
         flag = False
-        For i = EnrollmentFirstDataLine To lastrow
+        For i = EnrollmentFirstDataLine To LastRow
             ROSAID = CLng(Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_ROSA).Value)
             HEAPID = CLng(Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_HEAP).Value)
 '            If ROSAID = "" And HEAPID <> "" Then existingID = CLng(HEAPID)
@@ -97,10 +101,16 @@ Private Sub cmdSearch_Click()
                 lstEnrollments.Clear
                 If EnrollmentID = ROSAID Then
                     lstEnrollments.AddItem (Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_ROSA).Value + "-ROSA")
+                    cmdROSA.Enabled = True
+                    cmdHeap.Enabled = False
                 End If
                 If EnrollmentID = HEAPID Then
                     lstEnrollments.AddItem (Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_HEAP).Value + "-HEAP")
+                    cmdHeap.Enabled = True
+                    cmdROSA.Enabled = False
                 End If
+                cmdInfo.Enabled = True
+                cmdMeasure.Enabled = True
             End If
         Next i
         If Not flag Then MsgBox "The enrollment ID is not found. Please enter a valid enrollment ID. Thanks"
@@ -117,18 +127,25 @@ Private Sub lstEnrollments_Click()
     Dim rh As String
     rh = Right(lstEnrollments.Text, 4)
     
-    Select Case rh
-        Case "ROSA"
-            cmdHeap.Enabled = False
-            cmdROSA.Enabled = True
-        Case "HEAP"
-            cmdROSA.Enabled = False
-            cmdHeap.Enabled = True
-        Case Else
-            cmdROSA.Enabled = False
-            cmdHeap.Enabled = False
-    End Select
-    
+    If rh <> "" Then
+        currentEnrollment = Left(lstEnrollments.Text, Len(lstEnrollments.Text) - 5)
+        cmdUsage.Enabled = True
+        cmdMeasure.Enabled = True
+        cmdContextual.Enabled = True
+        cmdInfo.Enabled = True
+        Select Case rh
+            Case "ROSA"
+                cmdHeap.Enabled = False
+                cmdROSA.Enabled = True
+
+            Case "HEAP"
+                cmdROSA.Enabled = False
+                cmdHeap.Enabled = True
+
+            Case Else
+        End Select
+    End If
+
     
 End Sub
 
@@ -138,9 +155,9 @@ Private Sub UserForm_Initialize()
 
     lastROSA = Worksheets(ImportSheetName).Range("B" & Rows.Count).End(xlUp).Row
     lastHEAP = Worksheets(ImportSheetName).Range("C" & Rows.Count).End(xlUp).Row
-    lastrow = WorksheetFunction.Max(lastROSA, lastHEAP)
+    LastRow = WorksheetFunction.Max(lastROSA, lastHEAP)
     
-    For i = EnrollmentFirstDataLine To lastrow
+    For i = EnrollmentFirstDataLine To LastRow
         ROSAID = Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_ROSA).Value
         HEAPID = Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_HEAP).Value
         If ROSAID = "" And HEAPID <> "" Then existingID = HEAPID + "-HEAP"
@@ -148,6 +165,12 @@ Private Sub UserForm_Initialize()
         lstEnrollments.AddItem (existingID)
     Next i
     
+    cmdInfo.Enabled = False
+    cmdROSA.Enabled = False
+    cmdHeap.Enabled = False
+    cmdMeasure.Enabled = False
+    cmdUsage.Enabled = False
+    cmdContextual.Enabled = False
 End Sub
 
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)

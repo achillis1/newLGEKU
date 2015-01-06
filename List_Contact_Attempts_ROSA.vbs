@@ -21,8 +21,8 @@ Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
 End Sub
 
 Private Sub Cancel_ROSA_Click()
-Unload Me
-frmAdmin.Show
+Me.Hide
+frmProcessing.Show vbModeless
 End Sub
 
 Private Sub Clear_ROSA_Click()
@@ -56,7 +56,39 @@ Set wsdb = Worksheets("Enrollments")
 'Enrollment_Listbox.Value = EID
 EID = Enrollment_Listbox.Value
 'last row database
-wsDblr = wsdb.Cells(Rows.Count, 2).End(xlUp).Row
+wsDblr = wsdb.Cells(Rows.Count, NexantEnrollments.Enrollment_ID_ROSA).End(xlUp).Row
+
+Me.First_Contact_Attempt_Date_ROSA.Enabled = True
+Me.First_Contact_Attempt_Date_ROSA.BackColor = rgbWhite
+Me.First_Contact_Attempt_Notes_ROSA.Enabled = True
+Me.First_Contact_Attempt_Notes_ROSA.BackColor = rgbWhite
+Me.First_Contact_Attempt_Type_ROSA.Enabled = True
+Me.First_Contact_Attempt_Type_ROSA.BackColor = rgbWhite
+Me.Second_Contact_Attempt_Date_ROSA.Enabled = True
+Me.Second_Contact_Attempt_Date_ROSA.BackColor = rgbWhite
+Me.Second_Contact_Attempt_Notes_ROSA.Enabled = True
+Me.Second_Contact_Attempt_Notes_ROSA.BackColor = rgbWhite
+Me.Second_Contact_Attempt_Type_ROSA.Enabled = True
+Me.Second_Contact_Attempt_Type_ROSA.BackColor = rgbWhite
+Me.Third_Contact_Attempt_Date_ROSA.Enabled = True
+Me.Third_Contact_Attempt_Date_ROSA.BackColor = rgbWhite
+Me.Third_Contact_Attempt_Notes_ROSA.Enabled = True
+Me.Third_Contact_Attempt_Notes_ROSA.BackColor = rgbWhite
+Me.Third_Contact_Attempt_Type_ROSA.Enabled = True
+Me.Third_Contact_Attempt_Type_ROSA.BackColor = rgbWhite
+Me.Fourth_Contact_Attempt_Date_ROSA.Enabled = True
+Me.Fourth_Contact_Attempt_Date_ROSA.BackColor = rgbWhite
+Me.Fourth_Contact_Attempt_Notes_ROSA.Enabled = True
+Me.Fourth_Contact_Attempt_Notes_ROSA.BackColor = rgbWhite
+Me.Fourth_Contact_Attempt_Type_ROSA.Enabled = True
+Me.Fourth_Contact_Attempt_Type_ROSA.BackColor = rgbWhite
+Me.Fifth_Contact_Attempt_Date_ROSA.Enabled = True
+Me.Fifth_Contact_Attempt_Date_ROSA.BackColor = rgbWhite
+Me.Fifth_Contact_Attempt_Notes_ROSA.Enabled = True
+Me.Fifth_Contact_Attempt_Notes_ROSA.BackColor = rgbWhite
+Me.Fifth_Contact_Attempt_Type_ROSA.Enabled = True
+Me.Fifth_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+
 
 'Retrive values from Database
 Me.Enrollment_ID_ROSA = EID
@@ -88,9 +120,135 @@ For x = 11 To wsDblr
     End If
 Next x
 
+If Me.First_Contact_Attempt_Date_ROSA = "" Then
+    Me.Second_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.Second_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.Second_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.Second_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.Second_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.Second_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+    Me.Third_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.Third_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.Third_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.Third_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.Third_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.Third_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+    Me.Fourth_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.Fourth_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.Fourth_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.Fourth_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.Fourth_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.Fourth_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+    Me.Fifth_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.Fifth_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.Fifth_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.Fifth_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.Fifth_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.Fifth_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+ElseIf Me.Second_Contact_Attempt_Date_ROSA = "" Then
+    Me.First_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.First_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.First_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.First_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.First_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.First_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+    Me.Third_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.Third_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.Third_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.Third_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.Third_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.Third_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+    Me.Fourth_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.Fourth_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.Fourth_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.Fourth_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.Fourth_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.Fourth_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+    Me.Fifth_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.Fifth_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.Fifth_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.Fifth_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.Fifth_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.Fifth_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+ElseIf Me.Third_Contact_Attempt_Date_ROSA = "" Then
+    Me.First_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.First_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.First_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.First_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.First_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.First_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+    Me.Second_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.Second_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.Second_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.Second_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.Second_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.Second_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+    Me.Fourth_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.Fourth_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.Fourth_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.Fourth_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.Fourth_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.Fourth_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+    Me.Fifth_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.Fifth_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.Fifth_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.Fifth_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.Fifth_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.Fifth_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+ElseIf Me.Fourth_Contact_Attempt_Date_ROSA = "" Then
+    Me.First_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.First_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.First_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.First_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.First_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.First_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+    Me.Second_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.Second_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.Second_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.Second_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.Second_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.Second_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+    Me.Third_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.Third_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.Third_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.Third_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.Third_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.Third_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+    Me.Fifth_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.Fifth_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.Fifth_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.Fifth_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.Fifth_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.Fifth_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+ElseIf Me.Fifth_Contact_Attempt_Date_ROSA = "" Then
+    Me.First_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.First_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.First_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.First_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.First_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.First_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+    Me.Second_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.Second_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.Second_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.Second_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.Second_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.Second_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+    Me.Third_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.Third_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.Third_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.Third_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.Third_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.Third_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+    Me.Fourth_Contact_Attempt_Date_ROSA.Enabled = False
+    Me.Fourth_Contact_Attempt_Date_ROSA.BackColor = rgbLightGrey
+    Me.Fourth_Contact_Attempt_Notes_ROSA.Enabled = False
+    Me.Fourth_Contact_Attempt_Notes_ROSA.BackColor = rgbLightGrey
+    Me.Fourth_Contact_Attempt_Type_ROSA.Enabled = False
+    Me.Fourth_Contact_Attempt_Type_ROSA.BackColor = rgbLightGrey
+End If
 'IF DATA CHECK HERE THEN
-First_Contact_Attempt_Date_ROSA.Enabled = False
-First_Contact_Attempt_Date_ROSA.BackColor = &H80000005
+'First_Contact_Attempt_Date_ROSA.Enabled = False
+'First_Contact_Attempt_Date_ROSA.BackColor = &H80000005
 
 
 End Sub
@@ -104,9 +262,43 @@ Private Sub Save_ROSA_Click()
 Set wsdb = Worksheets("Enrollments")
 
 'Enrollment_Listbox.Value = EID
-EID = currentEnrollment
+EID = Me.Enrollment_ID_ROSA
 'last row database
 wsDblr = wsdb.Cells(Rows.Count, 2).End(xlUp).Row
+
+'Verify that the values have been added to the Fields
+If Me.First_Contact_Attempt_Date_ROSA.Enabled = True Then
+    If Me.First_Contact_Attempt_Date_ROSA = "" Or Me.First_Contact_Attempt_Type_ROSA = "" Or Me.First_Contact_Attempt_Notes_ROSA = "" Then
+        MsgBox ("Please Fill in the Date, Type, and Notes of the Attempt")
+        Exit Sub
+    End If
+End If
+If Me.Second_Contact_Attempt_Date_ROSA.Enabled = True Then
+    If Me.Second_Contact_Attempt_Date_ROSA = "" Or Me.Second_Contact_Attempt_Type_ROSA = "" Or Me.Second_Contact_Attempt_Notes_ROSA = "" Then
+        MsgBox ("Please Fill in the Date, Type, and Notes of the Attempt")
+        Exit Sub
+    End If
+End If
+If Me.Third_Contact_Attempt_Date_ROSA.Enabled = True Then
+    If Me.Third_Contact_Attempt_Date_ROSA = "" Or Me.Third_Contact_Attempt_Type_ROSA = "" Or Me.Third_Contact_Attempt_Notes_ROSA = "" Then
+        MsgBox ("Please Fill in the Date, Type, and Notes of the Attempt")
+        Exit Sub
+    End If
+End If
+If Me.Fourth_Contact_Attempt_Date_ROSA.Enabled = True Then
+    If Me.Fourth_Contact_Attempt_Date_ROSA = "" Or Me.Fourth_Contact_Attempt_Type_ROSA = "" Or Me.Fourth_Contact_Attempt_Notes_ROSA = "" Then
+        MsgBox ("Please Fill in the Date, Type, and Notes of the Attempt")
+        Exit Sub
+    End If
+End If
+If Me.Fifth_Contact_Attempt_Date_ROSA.Enabled = True Then
+    If Me.Fifth_Contact_Attempt_Date_ROSA = "" Or Me.Fifth_Contact_Attempt_Type_ROSA = "" Or Me.Fifth_Contact_Attempt_Notes_ROSA = "" Then
+        MsgBox ("Please Fill in the Date, Type, and Notes of the Attempt")
+        Exit Sub
+    End If
+End If
+
+
 
 For x = 11 To wsDblr
     If wsdb.Cells(x, NexantEnrollments.Enrollment_ID_ROSA) = EID Then
@@ -137,7 +329,7 @@ Private Sub UserForm_Initialize()
 Set wsdb = Worksheets("Enrollments")
 
 'last row database
-wsDblr = wsdb.Cells(Rows.Count, 2).End(xlUp).Row
+wsDblr = wsdb.Cells(Rows.Count, NexantEnrollments.Enrollment_ID_ROSA).End(xlUp).Row
 
 'find row in Database for Enrollment ID
 For x = 11 To wsDblr
@@ -157,3 +349,5 @@ Next x
 
 
 End Sub
+
+

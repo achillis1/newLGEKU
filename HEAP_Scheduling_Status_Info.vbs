@@ -20,8 +20,8 @@ Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
     End If
 End Sub
 Private Sub Cancel_HEAP_Click()
-Unload Me
-frmAdmin.Show
+Me.Hide
+frmAdmin.Show vbModeless
 End Sub
 
 Private Sub Frame2_Click()
@@ -119,7 +119,9 @@ For x = 11 To wsDblr
         wsdb.Cells(x, NexantEnrollments.Schedule_Time_HEAP) = Me.Schedule_Time_HEAP
         wsdb.Cells(x, NexantEnrollments.Total_conditioned_square_footage_HEAP) = Me.Total_conditioned_square_footage_HEAP
         wsdb.Cells(x, NexantEnrollments.WO_Number_HEAP) = Me.WO_Number_HEAP
-
+'Time stamp on Last updated
+        wsdb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment).NumberFormat = "@"
+        wsdb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment) = Format(LocalTimeToET(Now()), "YYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
 
         Exit Sub
         
@@ -228,4 +230,5 @@ For x = 11 To wsDblr
 Next x
 
 End Sub
+
 
