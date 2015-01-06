@@ -20,7 +20,8 @@ End Sub
 
 Private Sub cmdExit_Click()
     Application.Visible = True
-    ThisWorkbook.Close
+    Me.Hide
+    'ThisWorkbook.Close
 End Sub
 
 Private Sub cmdExport_Click()

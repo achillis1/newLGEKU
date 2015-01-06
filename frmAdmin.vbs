@@ -4,7 +4,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmAdmin
    ClientHeight    =   8265
    ClientLeft      =   45
    ClientTop       =   375
-   ClientWidth     =   4935
+   ClientWidth     =   5250
    OleObjectBlob   =   "frmAdmin.frx":0000
    StartUpPosition =   1  'CenterOwner
 End
@@ -30,6 +30,16 @@ Private Sub cmdHeap_Click()
         currentEnrollment = Left(lstEnrollments.Text, Len(lstEnrollments.Text) - 5)
     End If
     HEAP_Scheduling_Status_Info.Show
+End Sub
+
+Private Sub cmdHeapContact_Click()
+Me.Hide
+List_Contact_Attempts_HEAP.Show
+End Sub
+
+Private Sub cmdInfo_Click()
+Me.Hide
+Information_Form.Show
 End Sub
 
 Private Sub cmdReset_Click()
@@ -58,6 +68,11 @@ Private Sub cmdROSA_Click()
     End If
 
     ROSA_Scheduling_Status_Info.Show
+End Sub
+
+Private Sub cmdRosaContact_Click()
+Me.Hide
+List_Contact_Attempts_ROSA.Show
 End Sub
 
 Private Sub cmdSearch_Click()
@@ -90,6 +105,11 @@ Private Sub cmdSearch_Click()
         Next i
         If Not flag Then MsgBox "The enrollment ID is not found. Please enter a valid enrollment ID. Thanks"
     End If
+End Sub
+
+Private Sub cmdUsage_Click()
+Me.Hide
+Utility_Data.Show
 End Sub
 
 Private Sub lstEnrollments_Click()

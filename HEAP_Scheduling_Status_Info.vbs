@@ -13,10 +13,19 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+    If CloseMode = 0 Then
+        Cancel = True
+        MsgBox "The X is disabled, please use a button on the form.", vbCritical
+    End If
+End Sub
 Private Sub Cancel_HEAP_Click()
-    Unload Me
-    frmAdmin.Show
+Unload Me
+frmAdmin.Show
+End Sub
+
+Private Sub Frame2_Click()
+
 End Sub
 
 Private Sub MultiPage1_Change()
@@ -46,70 +55,70 @@ For x = 11 To wsDblr
         'push data from form to database
         'HEAP Scheduling
 
-        wsdb.Cells(x, 874) = Me.Customer_contact_mode_HEAP
-        wsdb.Cells(x, 875) = Me.Fifth_Contact_Attempt_Date_HEAP
-        wsdb.Cells(x, 876) = Me.Fifth_Contact_Attempt_Notes_HEAP
-        wsdb.Cells(x, 877) = Me.Fifth_Contact_Attempt_Type_HEAP
-        wsdb.Cells(x, 878) = Me.First_Contact_Attempt_Date_HEAP
-        wsdb.Cells(x, 879) = Me.First_Contact_Attempt_Notes_HEAP
-        wsdb.Cells(x, 880) = Me.First_Contact_Attempt_Type_HEAP
-        wsdb.Cells(x, 881) = Me.Follow_up_Date_HEAP
-        wsdb.Cells(x, 882) = Me.Fourth_Contact_Attempt_Date_HEAP
-        wsdb.Cells(x, 883) = Me.Fourth_Contact_Attempt_Notes_HEAP
-        wsdb.Cells(x, 884) = Me.Fourth_Contact_Attempt_Type_HEAP
-        wsdb.Cells(x, 885) = Me.Second_Contact_Attempt_Date_HEAP
-        wsdb.Cells(x, 886) = Me.Second_Contact_Attempt_Notes_HEAP
-        wsdb.Cells(x, 887) = Me.Second_Contact_Attempt_Type_HEAP
-        wsdb.Cells(x, 888) = Me.Third_Contact_Attempt_Date_HEAP
-        wsdb.Cells(x, 889) = Me.Third_Contact_Attempt_Notes_HEAP
-        wsdb.Cells(x, 890) = Me.Third_Contact_Attempt_Type_HEAP
-        wsdb.Cells(x, 891) = Me.CANCELLED_date_interfaced_HEAP
-        wsdb.Cells(x, 892) = Me.CANCELLED_date_set_HEAP
-        wsdb.Cells(x, 893) = Me.COMPLETE_date_interfaced_HEAP
-        wsdb.Cells(x, 894) = Me.COMPLETE_date_set_HEAP
-        wsdb.Cells(x, 895) = Me.FIRST_CONTACT_date_interfaced_HEAP
-        wsdb.Cells(x, 896) = Me.FIRST_CONTACT_date_set_HEAP
-        wsdb.Cells(x, 897) = Me.ON_HOLD_date_interfaced_HEAP
-        wsdb.Cells(x, 898) = Me.ON_HOLD_date_set_HEAP
-        wsdb.Cells(x, 899) = Me.PENDING_1_date_interfaced_HEAP
-        wsdb.Cells(x, 900) = Me.PENDING_1_date_set_HEAP
-        wsdb.Cells(x, 901) = Me.PENDING_2_date_interfaced_HEAP
-        wsdb.Cells(x, 902) = Me.PENDING_2_date_set_HEAP
-        wsdb.Cells(x, 903) = Me.PENDING_3_date_interfaced_HEAP
-        wsdb.Cells(x, 904) = Me.PENDING_3_date_set_HEAP
-        wsdb.Cells(x, 905) = Me.PENDING_4_date_interfaced_HEAP
-        wsdb.Cells(x, 906) = Me.PENDING_4_date_set_HEAP
-        wsdb.Cells(x, 907) = Me.PENDING_5_date_interfaced_HEAP
-        wsdb.Cells(x, 908) = Me.PENDING_5_date_set_HEAP
-        wsdb.Cells(x, 909) = Me.RECEIVED_AT_VENDOR_date_interfaced_HEAP
-        wsdb.Cells(x, 910) = Me.RECEIVED_AT_VENDOR_date_set_HEAP
-        wsdb.Cells(x, 911) = Me.SCHEDULED_date_interfaced_HEAP
-        wsdb.Cells(x, 912) = Me.SCHEDULED_date_set_HEAP
-        wsdb.Cells(x, 913) = Me.SITE_WORK_COMPLETE_date_interfaced_HEAP
-        wsdb.Cells(x, 914) = Me.SITE_WORK_COMPLETE_date_set_HEAP
-        wsdb.Cells(x, 915) = Me.Status_Date_HEAP
-        wsdb.Cells(x, 916) = Me.Status_HEAP
-        wsdb.Cells(x, 917) = Me.Status_Time_HEAP
-        wsdb.Cells(x, 918) = Me.WITHDRAWN_date_interfaced_HEAP
-        wsdb.Cells(x, 919) = Me.WITHDRAWN_date_set_HEAP
-        wsdb.Cells(x, 920) = Me.Air_Leakage_Rating_HEAP
-        wsdb.Cells(x, 921) = Me.Auditor_Notes_HEAP
-        wsdb.Cells(x, 922) = Me.Blower_door_post_test_HEAP
-        wsdb.Cells(x, 923) = Me.Blower_door_pre_test_HEAP
-        wsdb.Cells(x, 924) = Me.Building_occupancy_count_HEAP
-        wsdb.Cells(x, 925) = Me.Business_Partner_Number_HEAP
-        wsdb.Cells(x, 926) = Me.Comments_HEAP
-        wsdb.Cells(x, 927) = Me.Dog_or_Cat_Flag_HEAP
-        wsdb.Cells(x, 928) = Me.FILE_NAME_HEAP
-        wsdb.Cells(x, 929) = Me.First_and_last_name_of_main_Auditor_HEAP
-        wsdb.Cells(x, 930) = Me.Number_of_Auditors_HEAP
-        wsdb.Cells(x, 931) = Me.Number_of_stories_above_grade_HEAP
-        wsdb.Cells(x, 932) = Me.Occupancy_frequency_HEAP
-        wsdb.Cells(x, 933) = Me.Ownership_Type_HEAP
-        wsdb.Cells(x, 934) = Me.Schedule_Date_HEAP
-        wsdb.Cells(x, 935) = Me.Schedule_Time_HEAP
-        wsdb.Cells(x, 936) = Me.Total_conditioned_square_footage_HEAP
-        wsdb.Cells(x, 937) = Me.WO_Number_HEAP
+        wsdb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.Customer_contact_mode_HEAP
+        wsdb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Date_HEAP) = Me.Fifth_Contact_Attempt_Date_HEAP
+        wsdb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Notes_HEAP) = Me.Fifth_Contact_Attempt_Notes_HEAP
+        wsdb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Type_HEAP) = Me.Fifth_Contact_Attempt_Type_HEAP
+        wsdb.Cells(x, NexantEnrollments.First_Contact_Attempt_Date_HEAP) = Me.First_Contact_Attempt_Date_HEAP
+        wsdb.Cells(x, NexantEnrollments.First_Contact_Attempt_Notes_HEAP) = Me.First_Contact_Attempt_Notes_HEAP
+        wsdb.Cells(x, NexantEnrollments.First_Contact_Attempt_Type_HEAP) = Me.First_Contact_Attempt_Type_HEAP
+        wsdb.Cells(x, NexantEnrollments.Follow_up_Date_HEAP) = Me.Follow_up_Date_HEAP
+        wsdb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Date_HEAP) = Me.Fourth_Contact_Attempt_Date_HEAP
+        wsdb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Notes_HEAP) = Me.Fourth_Contact_Attempt_Notes_HEAP
+        wsdb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Type_HEAP) = Me.Fourth_Contact_Attempt_Type_HEAP
+        wsdb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Date_HEAP) = Me.Second_Contact_Attempt_Date_HEAP
+        wsdb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Notes_HEAP) = Me.Second_Contact_Attempt_Notes_HEAP
+        wsdb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Type_HEAP) = Me.Second_Contact_Attempt_Type_HEAP
+        wsdb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Date_HEAP) = Me.Third_Contact_Attempt_Date_HEAP
+        wsdb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Notes_HEAP) = Me.Third_Contact_Attempt_Notes_HEAP
+        wsdb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Type_HEAP) = Me.Third_Contact_Attempt_Type_HEAP
+        wsdb.Cells(x, NexantEnrollments.CANCELLED_date_interfaced_HEAP) = Me.CANCELLED_date_interfaced_HEAP
+        wsdb.Cells(x, NexantEnrollments.CANCELLED_date_set_HEAP) = Me.CANCELLED_date_set_HEAP
+        wsdb.Cells(x, NexantEnrollments.COMPLETE_date_interfaced_HEAP) = Me.COMPLETE_date_interfaced_HEAP
+        wsdb.Cells(x, NexantEnrollments.COMPLETE_date_set_HEAP) = Me.COMPLETE_date_set_HEAP
+        wsdb.Cells(x, NexantEnrollments.FIRST_CONTACT_date_interfaced_HEAP) = Me.FIRST_CONTACT_date_interfaced_HEAP
+        wsdb.Cells(x, NexantEnrollments.FIRST_CONTACT_date_set_HEAP) = Me.FIRST_CONTACT_date_set_HEAP
+        wsdb.Cells(x, NexantEnrollments.ON_HOLD_date_interfaced_HEAP) = Me.ON_HOLD_date_interfaced_HEAP
+        wsdb.Cells(x, NexantEnrollments.ON_HOLD_date_set_HEAP) = Me.ON_HOLD_date_set_HEAP
+        wsdb.Cells(x, NexantEnrollments.PENDING_1_date_interfaced_HEAP) = Me.PENDING_1_date_interfaced_HEAP
+        wsdb.Cells(x, NexantEnrollments.PENDING_1_date_set_HEAP) = Me.PENDING_1_date_set_HEAP
+        wsdb.Cells(x, NexantEnrollments.PENDING_2_date_interfaced_HEAP) = Me.PENDING_2_date_interfaced_HEAP
+        wsdb.Cells(x, NexantEnrollments.PENDING_2_date_set_HEAP) = Me.PENDING_2_date_set_HEAP
+        wsdb.Cells(x, NexantEnrollments.PENDING_3_date_interfaced_HEAP) = Me.PENDING_3_date_interfaced_HEAP
+        wsdb.Cells(x, NexantEnrollments.PENDING_3_date_set_HEAP) = Me.PENDING_3_date_set_HEAP
+        wsdb.Cells(x, NexantEnrollments.PENDING_4_date_interfaced_HEAP) = Me.PENDING_4_date_interfaced_HEAP
+        wsdb.Cells(x, NexantEnrollments.PENDING_4_date_set_HEAP) = Me.PENDING_4_date_set_HEAP
+        wsdb.Cells(x, NexantEnrollments.PENDING_5_date_interfaced_HEAP) = Me.PENDING_5_date_interfaced_HEAP
+        wsdb.Cells(x, NexantEnrollments.PENDING_5_date_set_HEAP) = Me.PENDING_5_date_set_HEAP
+        wsdb.Cells(x, NexantEnrollments.RECEIVED_AT_VENDOR_date_interfaced_HEAP) = Me.RECEIVED_AT_VENDOR_date_interfaced_HEAP
+        wsdb.Cells(x, NexantEnrollments.RECEIVED_AT_VENDOR_date_set_HEAP) = Me.RECEIVED_AT_VENDOR_date_set_HEAP
+        wsdb.Cells(x, NexantEnrollments.SCHEDULED_date_interfaced_HEAP) = Me.SCHEDULED_date_interfaced_HEAP
+        wsdb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP) = Me.SCHEDULED_date_set_HEAP
+        wsdb.Cells(x, NexantEnrollments.SITE_WORK_COMPLETE_date_interfaced_HEAP) = Me.SITE_WORK_COMPLETE_date_interfaced_HEAP
+        wsdb.Cells(x, NexantEnrollments.SITE_WORK_COMPLETE_date_set_HEAP) = Me.SITE_WORK_COMPLETE_date_set_HEAP
+        wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Me.Status_Date_HEAP
+        wsdb.Cells(x, NexantEnrollments.Status_HEAP) = Me.Status_HEAP
+        wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Me.Status_Time_HEAP
+        wsdb.Cells(x, NexantEnrollments.WITHDRAWN_date_interfaced_HEAP) = Me.WITHDRAWN_date_interfaced_HEAP
+        wsdb.Cells(x, NexantEnrollments.WITHDRAWN_date_set_HEAP) = Me.WITHDRAWN_date_set_HEAP
+        wsdb.Cells(x, NexantEnrollments.Air_Leakage_Rating_HEAP) = Me.Air_Leakage_Rating_HEAP
+        wsdb.Cells(x, NexantEnrollments.Auditor_Notes_HEAP) = Me.Auditor_Notes_HEAP
+        wsdb.Cells(x, NexantEnrollments.Blower_door_post_test_HEAP) = Me.Blower_door_post_test_HEAP
+        wsdb.Cells(x, NexantEnrollments.Blower_door_pre_test_HEAP) = Me.Blower_door_pre_test_HEAP
+        wsdb.Cells(x, NexantEnrollments.Building_occupancy_count_HEAP) = Me.Building_occupancy_count_HEAP
+        wsdb.Cells(x, NexantEnrollments.Business_Partner_Number_HEAP) = Me.Business_Partner_Number_HEAP
+        wsdb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.Comments_HEAP
+        wsdb.Cells(x, NexantEnrollments.Dog_or_Cat_Flag_HEAP) = Me.Dog_or_Cat_Flag_HEAP
+        wsdb.Cells(x, NexantEnrollments.FILE_NAME_HEAP) = Me.FILE_NAME_HEAP
+        wsdb.Cells(x, NexantEnrollments.First_and_last_name_of_main_Auditor_HEAP) = Me.First_and_last_name_of_main_Auditor_HEAP
+        wsdb.Cells(x, NexantEnrollments.Number_of_Auditors_HEAP) = Me.Number_of_Auditors_HEAP
+        wsdb.Cells(x, NexantEnrollments.Number_of_stories_above_grade_HEAP) = Me.Number_of_stories_above_grade_HEAP
+        wsdb.Cells(x, NexantEnrollments.Occupancy_frequency_HEAP) = Me.Occupancy_frequency_HEAP
+        wsdb.Cells(x, NexantEnrollments.Ownership_Type_HEAP) = Me.Ownership_Type_HEAP
+        wsdb.Cells(x, NexantEnrollments.Schedule_Date_HEAP) = Me.Schedule_Date_HEAP
+        wsdb.Cells(x, NexantEnrollments.Schedule_Time_HEAP) = Me.Schedule_Time_HEAP
+        wsdb.Cells(x, NexantEnrollments.Total_conditioned_square_footage_HEAP) = Me.Total_conditioned_square_footage_HEAP
+        wsdb.Cells(x, NexantEnrollments.WO_Number_HEAP) = Me.WO_Number_HEAP
 
 
         Exit Sub
@@ -142,71 +151,71 @@ For x = 11 To wsDblr
         'push data from database to form
         'HEAP Scheduling
 
-        Me.Enrollment_ID_HEAP = wsdb.Cells(x, 3)
-        Me.Customer_contact_mode_HEAP = wsdb.Cells(x, 874)
-        Me.Fifth_Contact_Attempt_Date_HEAP = wsdb.Cells(x, 875)
-        Me.Fifth_Contact_Attempt_Notes_HEAP = wsdb.Cells(x, 876)
-        Me.Fifth_Contact_Attempt_Type_HEAP = wsdb.Cells(x, 877)
-        Me.First_Contact_Attempt_Date_HEAP = wsdb.Cells(x, 878)
-        Me.First_Contact_Attempt_Notes_HEAP = wsdb.Cells(x, 879)
-        Me.First_Contact_Attempt_Type_HEAP = wsdb.Cells(x, 880)
-        Me.Follow_up_Date_HEAP = wsdb.Cells(x, 881)
-        Me.Fourth_Contact_Attempt_Date_HEAP = wsdb.Cells(x, 882)
-        Me.Fourth_Contact_Attempt_Notes_HEAP = wsdb.Cells(x, 883)
-        Me.Fourth_Contact_Attempt_Type_HEAP = wsdb.Cells(x, 884)
-        Me.Second_Contact_Attempt_Date_HEAP = wsdb.Cells(x, 885)
-        Me.Second_Contact_Attempt_Notes_HEAP = wsdb.Cells(x, 886)
-        Me.Second_Contact_Attempt_Type_HEAP = wsdb.Cells(x, 887)
-        Me.Third_Contact_Attempt_Date_HEAP = wsdb.Cells(x, 888)
-        Me.Third_Contact_Attempt_Notes_HEAP = wsdb.Cells(x, 889)
-        Me.Third_Contact_Attempt_Type_HEAP = wsdb.Cells(x, 890)
-        Me.CANCELLED_date_interfaced_HEAP = wsdb.Cells(x, 891)
-        Me.CANCELLED_date_set_HEAP = wsdb.Cells(x, 892)
-        Me.COMPLETE_date_interfaced_HEAP = wsdb.Cells(x, 893)
-        Me.COMPLETE_date_set_HEAP = wsdb.Cells(x, 894)
-        Me.FIRST_CONTACT_date_interfaced_HEAP = wsdb.Cells(x, 895)
-        Me.FIRST_CONTACT_date_set_HEAP = wsdb.Cells(x, 896)
-        Me.ON_HOLD_date_interfaced_HEAP = wsdb.Cells(x, 897)
-        Me.ON_HOLD_date_set_HEAP = wsdb.Cells(x, 898)
-        Me.PENDING_1_date_interfaced_HEAP = wsdb.Cells(x, 899)
-        Me.PENDING_1_date_set_HEAP = wsdb.Cells(x, 900)
-        Me.PENDING_2_date_interfaced_HEAP = wsdb.Cells(x, 901)
-        Me.PENDING_2_date_set_HEAP = wsdb.Cells(x, 902)
-        Me.PENDING_3_date_interfaced_HEAP = wsdb.Cells(x, 903)
-        Me.PENDING_3_date_set_HEAP = wsdb.Cells(x, 904)
-        Me.PENDING_4_date_interfaced_HEAP = wsdb.Cells(x, 905)
-        Me.PENDING_4_date_set_HEAP = wsdb.Cells(x, 906)
-        Me.PENDING_5_date_interfaced_HEAP = wsdb.Cells(x, 907)
-        Me.PENDING_5_date_set_HEAP = wsdb.Cells(x, 908)
-        Me.RECEIVED_AT_VENDOR_date_interfaced_HEAP = wsdb.Cells(x, 909)
-        Me.RECEIVED_AT_VENDOR_date_set_HEAP = wsdb.Cells(x, 910)
-        Me.SCHEDULED_date_interfaced_HEAP = wsdb.Cells(x, 911)
-        Me.SCHEDULED_date_set_HEAP = wsdb.Cells(x, 912)
-        Me.SITE_WORK_COMPLETE_date_interfaced_HEAP = wsdb.Cells(x, 913)
-        Me.SITE_WORK_COMPLETE_date_set_HEAP = wsdb.Cells(x, 914)
-        Me.Status_Date_HEAP = wsdb.Cells(x, 915)
-        Me.Status_HEAP = wsdb.Cells(x, 916)
-        Me.Status_Time_HEAP = wsdb.Cells(x, 917)
-        Me.WITHDRAWN_date_interfaced_HEAP = wsdb.Cells(x, 918)
-        Me.WITHDRAWN_date_set_HEAP = wsdb.Cells(x, 919)
-        Me.Air_Leakage_Rating_HEAP = wsdb.Cells(x, 920)
-        Me.Auditor_Notes_HEAP = wsdb.Cells(x, 921)
-        Me.Blower_door_post_test_HEAP = wsdb.Cells(x, 922)
-        Me.Blower_door_pre_test_HEAP = wsdb.Cells(x, 923)
-        Me.Building_occupancy_count_HEAP = wsdb.Cells(x, 924)
-        Me.Business_Partner_Number_HEAP = wsdb.Cells(x, 925)
-        Me.Comments_HEAP = wsdb.Cells(x, 926)
-        Me.Dog_or_Cat_Flag_HEAP = wsdb.Cells(x, 927)
-        Me.FILE_NAME_HEAP = wsdb.Cells(x, 928)
-        Me.First_and_last_name_of_main_Auditor_HEAP = wsdb.Cells(x, 929)
-        Me.Number_of_Auditors_HEAP = wsdb.Cells(x, 930)
-        Me.Number_of_stories_above_grade_HEAP = wsdb.Cells(x, 931)
-        Me.Occupancy_frequency_HEAP = wsdb.Cells(x, 932)
-        Me.Ownership_Type_HEAP = wsdb.Cells(x, 933)
-        Me.Schedule_Date_HEAP = wsdb.Cells(x, 934)
-        Me.Schedule_Time_HEAP = wsdb.Cells(x, 935)
-        Me.Total_conditioned_square_footage_HEAP = wsdb.Cells(x, 936)
-        Me.WO_Number_HEAP = wsdb.Cells(x, 937)
+        Me.Enrollment_ID_HEAP = wsdb.Cells(x, NexantEnrollments.Enrollment_ID_HEAP)
+        Me.Customer_contact_mode_HEAP = wsdb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP)
+        Me.Fifth_Contact_Attempt_Date_HEAP = wsdb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Date_HEAP)
+        Me.Fifth_Contact_Attempt_Notes_HEAP = wsdb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Notes_HEAP)
+        Me.Fifth_Contact_Attempt_Type_HEAP = wsdb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Type_HEAP)
+        Me.First_Contact_Attempt_Date_HEAP = wsdb.Cells(x, NexantEnrollments.First_Contact_Attempt_Date_HEAP)
+        Me.First_Contact_Attempt_Notes_HEAP = wsdb.Cells(x, NexantEnrollments.First_Contact_Attempt_Notes_HEAP)
+        Me.First_Contact_Attempt_Type_HEAP = wsdb.Cells(x, NexantEnrollments.First_Contact_Attempt_Type_HEAP)
+        Me.Follow_up_Date_HEAP = wsdb.Cells(x, NexantEnrollments.Follow_up_Date_HEAP)
+        Me.Fourth_Contact_Attempt_Date_HEAP = wsdb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Date_HEAP)
+        Me.Fourth_Contact_Attempt_Notes_HEAP = wsdb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Notes_HEAP)
+        Me.Fourth_Contact_Attempt_Type_HEAP = wsdb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Type_HEAP)
+        Me.Second_Contact_Attempt_Date_HEAP = wsdb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Date_HEAP)
+        Me.Second_Contact_Attempt_Notes_HEAP = wsdb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Notes_HEAP)
+        Me.Second_Contact_Attempt_Type_HEAP = wsdb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Type_HEAP)
+        Me.Third_Contact_Attempt_Date_HEAP = wsdb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Date_HEAP)
+        Me.Third_Contact_Attempt_Notes_HEAP = wsdb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Notes_HEAP)
+        Me.Third_Contact_Attempt_Type_HEAP = wsdb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Type_HEAP)
+        Me.CANCELLED_date_interfaced_HEAP = wsdb.Cells(x, NexantEnrollments.CANCELLED_date_interfaced_HEAP)
+        Me.CANCELLED_date_set_HEAP = wsdb.Cells(x, NexantEnrollments.CANCELLED_date_set_HEAP)
+        Me.COMPLETE_date_interfaced_HEAP = wsdb.Cells(x, NexantEnrollments.COMPLETE_date_interfaced_HEAP)
+        Me.COMPLETE_date_set_HEAP = wsdb.Cells(x, NexantEnrollments.COMPLETE_date_set_HEAP)
+        Me.FIRST_CONTACT_date_interfaced_HEAP = wsdb.Cells(x, NexantEnrollments.FIRST_CONTACT_date_interfaced_HEAP)
+        Me.FIRST_CONTACT_date_set_HEAP = wsdb.Cells(x, NexantEnrollments.FIRST_CONTACT_date_set_HEAP)
+        Me.ON_HOLD_date_interfaced_HEAP = wsdb.Cells(x, NexantEnrollments.ON_HOLD_date_interfaced_HEAP)
+        Me.ON_HOLD_date_set_HEAP = wsdb.Cells(x, NexantEnrollments.ON_HOLD_date_set_HEAP)
+        Me.PENDING_1_date_interfaced_HEAP = wsdb.Cells(x, NexantEnrollments.PENDING_1_date_interfaced_HEAP)
+        Me.PENDING_1_date_set_HEAP = wsdb.Cells(x, NexantEnrollments.PENDING_1_date_set_HEAP)
+        Me.PENDING_2_date_interfaced_HEAP = wsdb.Cells(x, NexantEnrollments.PENDING_2_date_interfaced_HEAP)
+        Me.PENDING_2_date_set_HEAP = wsdb.Cells(x, NexantEnrollments.PENDING_2_date_set_HEAP)
+        Me.PENDING_3_date_interfaced_HEAP = wsdb.Cells(x, NexantEnrollments.PENDING_3_date_interfaced_HEAP)
+        Me.PENDING_3_date_set_HEAP = wsdb.Cells(x, NexantEnrollments.PENDING_3_date_set_HEAP)
+        Me.PENDING_4_date_interfaced_HEAP = wsdb.Cells(x, NexantEnrollments.PENDING_4_date_interfaced_HEAP)
+        Me.PENDING_4_date_set_HEAP = wsdb.Cells(x, NexantEnrollments.PENDING_4_date_set_HEAP)
+        Me.PENDING_5_date_interfaced_HEAP = wsdb.Cells(x, NexantEnrollments.PENDING_5_date_interfaced_HEAP)
+        Me.PENDING_5_date_set_HEAP = wsdb.Cells(x, NexantEnrollments.PENDING_5_date_set_HEAP)
+        Me.RECEIVED_AT_VENDOR_date_interfaced_HEAP = wsdb.Cells(x, NexantEnrollments.RECEIVED_AT_VENDOR_date_interfaced_HEAP)
+        Me.RECEIVED_AT_VENDOR_date_set_HEAP = wsdb.Cells(x, NexantEnrollments.RECEIVED_AT_VENDOR_date_set_HEAP)
+        Me.SCHEDULED_date_interfaced_HEAP = wsdb.Cells(x, NexantEnrollments.SCHEDULED_date_interfaced_HEAP)
+        Me.SCHEDULED_date_set_HEAP = wsdb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP)
+        Me.SITE_WORK_COMPLETE_date_interfaced_HEAP = wsdb.Cells(x, NexantEnrollments.SITE_WORK_COMPLETE_date_interfaced_HEAP)
+        Me.SITE_WORK_COMPLETE_date_set_HEAP = wsdb.Cells(x, NexantEnrollments.SITE_WORK_COMPLETE_date_set_HEAP)
+        Me.Status_Date_HEAP = wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP)
+        Me.Status_HEAP = wsdb.Cells(x, NexantEnrollments.Status_HEAP)
+        Me.Status_Time_HEAP = wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP)
+        Me.WITHDRAWN_date_interfaced_HEAP = wsdb.Cells(x, NexantEnrollments.WITHDRAWN_date_interfaced_HEAP)
+        Me.WITHDRAWN_date_set_HEAP = wsdb.Cells(x, NexantEnrollments.WITHDRAWN_date_set_HEAP)
+        Me.Air_Leakage_Rating_HEAP = wsdb.Cells(x, NexantEnrollments.Air_Leakage_Rating_HEAP)
+        Me.Auditor_Notes_HEAP = wsdb.Cells(x, NexantEnrollments.Auditor_Notes_HEAP)
+        Me.Blower_door_post_test_HEAP = wsdb.Cells(x, NexantEnrollments.Blower_door_post_test_HEAP)
+        Me.Blower_door_pre_test_HEAP = wsdb.Cells(x, NexantEnrollments.Blower_door_pre_test_HEAP)
+        Me.Building_occupancy_count_HEAP = wsdb.Cells(x, NexantEnrollments.Building_occupancy_count_HEAP)
+        Me.Business_Partner_Number_HEAP = wsdb.Cells(x, NexantEnrollments.Business_Partner_Number_HEAP)
+        Me.Comments_HEAP = wsdb.Cells(x, NexantEnrollments.Comments_HEAP)
+        Me.Dog_or_Cat_Flag_HEAP = wsdb.Cells(x, NexantEnrollments.Dog_or_Cat_Flag_HEAP)
+        Me.FILE_NAME_HEAP = wsdb.Cells(x, NexantEnrollments.FILE_NAME_HEAP)
+        Me.First_and_last_name_of_main_Auditor_HEAP = wsdb.Cells(x, NexantEnrollments.First_and_last_name_of_main_Auditor_HEAP)
+        Me.Number_of_Auditors_HEAP = wsdb.Cells(x, NexantEnrollments.Number_of_Auditors_HEAP)
+        Me.Number_of_stories_above_grade_HEAP = wsdb.Cells(x, NexantEnrollments.Number_of_stories_above_grade_HEAP)
+        Me.Occupancy_frequency_HEAP = wsdb.Cells(x, NexantEnrollments.Occupancy_frequency_HEAP)
+        Me.Ownership_Type_HEAP = wsdb.Cells(x, NexantEnrollments.Ownership_Type_HEAP)
+        Me.Schedule_Date_HEAP = wsdb.Cells(x, NexantEnrollments.Schedule_Date_HEAP)
+        Me.Schedule_Time_HEAP = wsdb.Cells(x, NexantEnrollments.Schedule_Time_HEAP)
+        Me.Total_conditioned_square_footage_HEAP = wsdb.Cells(x, NexantEnrollments.Total_conditioned_square_footage_HEAP)
+        Me.WO_Number_HEAP = wsdb.Cells(x, NexantEnrollments.WO_Number_HEAP)
 
         Exit Sub
         
@@ -219,3 +228,4 @@ For x = 11 To wsDblr
 Next x
 
 End Sub
+
