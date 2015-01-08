@@ -172,6 +172,7 @@ Private Sub parseenrollment(ByRef x() As String, ByVal ir As Integer, ByVal pn A
     Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Premise_ID).NumberFormat = "@"
     Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Premise_ID).Value = x(LGEEnrollments.Premise_ID)
     Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Company_Code).Value = x(LGEEnrollments.Company_Code)
+    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Company_Acronym).Value = x(LGEEnrollments.Company_Code)
     Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Account_Number).NumberFormat = "@"
     Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Account_Number).Value = x(LGEEnrollments.Customer_Account)
     Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Main_Account_Flag).Value = x(LGEEnrollments.Main_Account_Flag)
@@ -246,12 +247,17 @@ Private Sub parseenrollment(ByRef x() As String, ByVal ir As Integer, ByVal pn A
         Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Status_Date_ROSA).NumberFormat = "@"
         Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Status_Date_ROSA) = Format(LocalTimeToET(Now()), "YYYYMMDD")
         Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Status_Time_ROSA).NumberFormat = "@"
-        Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Status_Time_ROSA) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+        Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Status_Time_ROSA) = Format(LocalTimeToET(Now()), "HHMMSS")
+        Worksheets(PMSheetName).Cells(PMROSAEnrollRow, InboundLastReadCol).NumberFormat = "@"
+        Worksheets(PMSheetName).Cells(PMROSAEnrollRow, InboundLastReadCol) = Format(LocalTimeToET(Now()), "HHMMSS")
+    
     Else
         Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
         Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
         Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
-        Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+        Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "HHMMSS")
+        Worksheets(PMSheetName).Cells(PMHEAPEnrollRow, InboundLastReadCol).NumberFormat = "@"
+        Worksheets(PMSheetName).Cells(PMHEAPEnrollRow, InboundLastReadCol) = Format(LocalTimeToET(Now()), "HHMMSS")
     End If
     
     If x(LGEEnrollments.Transaction_Type) = "N" Then
@@ -260,14 +266,6 @@ Private Sub parseenrollment(ByRef x() As String, ByVal ir As Integer, ByVal pn A
         Else
             Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Status_HEAP) = "RECEIVED AT VENDOR"
         End If
-    End If
-    
-    If pn = "ROSA" Then
-        Worksheets(PMSheetName).Cells(PMROSAEnrollRow, InboundLastReadCol).NumberFormat = "@"
-        Worksheets(PMSheetName).Cells(PMROSAEnrollRow, InboundLastReadCol) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-    Else
-        Worksheets(PMSheetName).Cells(PMHEAPEnrollRow, InboundLastReadCol).NumberFormat = "@"
-        Worksheets(PMSheetName).Cells(PMHEAPEnrollRow, InboundLastReadCol) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
     End If
     
 End Sub
