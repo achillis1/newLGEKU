@@ -17,6 +17,7 @@ Attribute VB_Exposed = False
 
 
 
+
 Private Sub cmdCancel_Click()
 Me.Hide
 frmAdmin.Show vbModeless
@@ -24,46 +25,7 @@ frmAdmin.Show vbModeless
 End Sub
 
 
-Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
-    If CloseMode = 0 Then
-        Cancel = True
-        MsgBox "The X is disabled, please use a button on the form.", vbCritical
-    End If
-End Sub
-
-
-
-Private Sub CommandButton1_Click()
-Dim TimeandDate As String
-Dim Result As Double
-Dim Enrollment_ID_ROSA As Double
-Dim HeadingOffset
-
-
-
-
-
-
-End Sub
-
-
-
-Private Sub CommandButton2_Click()
-Call UserForm_Initialize
-
-End Sub
-
-Private Sub CommandButton3_Click()
-Me.Hide
-frmAdmin.Show
-
-End Sub
-
-Private Sub Frame17_Click()
-
-End Sub
-
-Private Sub UserForm_Initialize()
+Private Sub UserForm_Activate()
 Dim TimeandDate As String
 Dim LastRow As String
 Dim Results As Double
@@ -82,7 +44,7 @@ If Enrollment_ID_ROSA <> "" Then
 LastRow = Cells(Rows.Count, 2).End(xlUp).row
 
 'Results = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range("B1", "B" & Range("B" & Rows.Count).End(xlUp).Row), 0)
-Results = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range(Cells(11, NexantEnrollments.Enrollment_ID_ROSA), Cells(LastRow, NexantEnrollments.Enrollment_ID_ROSA))) + HeadingOffset
+Results = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range(Cells(11, NexantEnrollments.Enrollment_ID_ROSA), Cells(LastRow, NexantEnrollments.Enrollment_ID_ROSA)), 0) + HeadingOffset
 
 Else
 
@@ -397,6 +359,47 @@ MsgBox ("No Enrollment ID found")
 Me.Hide
 
 End If
+
+End Sub
+
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+    If CloseMode = 0 Then
+        Cancel = True
+        MsgBox "The X is disabled, please use a button on the form.", vbCritical
+    End If
+End Sub
+
+
+
+Private Sub CommandButton1_Click()
+Dim TimeandDate As String
+Dim Result As Double
+Dim Enrollment_ID_ROSA As Double
+Dim HeadingOffset
+
+
+
+
+
+
+End Sub
+
+
+
+Private Sub CommandButton2_Click()
+Call UserForm_Initialize
+
+End Sub
+
+Private Sub CommandButton3_Click()
+Me.Hide
+frmAdmin.Show
+
+End Sub
+
+
+
+Private Sub UserForm_Initialize()
 
 
 End Sub

@@ -16,6 +16,7 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
 
+
 Private Sub Account_Number_Exit(ByVal Cancel As MSForms.ReturnBoolean)
 If Len(Account_Number) = 12 And IsNumeric(Account_Number) = True Then
 Account_Number.BackColor = &H80000005
@@ -129,10 +130,6 @@ MsgBox ("Mailing Zipcode code must be in 'XXXXX' or 'XXXXX-XXXX' format")
 End If
 
 End If
-
-End Sub
-
-Private Sub MultiPage1_Change()
 
 End Sub
 
@@ -304,7 +301,7 @@ Enrollment_ID_ROSA = currentEnrollment
 HeadingOffset = 10
 
 LastRow = Cells(Rows.Count, 2).End(xlUp).row
-Result = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range(Cells(11, NexantEnrollments.Enrollment_ID_ROSA), Cells(LastRow, NexantEnrollments.Enrollment_ID_ROSA))) + HeadingOffset
+Result = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range(Cells(11, NexantEnrollments.Enrollment_ID_ROSA), Cells(LastRow, NexantEnrollments.Enrollment_ID_ROSA)), 0) + HeadingOffset
 
 Sheets("Enrollments").Cells(Result, NexantEnrollments.Last_Modified_Date_Enrollment) = Format(LocalTimeToET(Now()), "yyyymmdd:hhmmss")
 
@@ -385,7 +382,7 @@ End If
 
 End Sub
 
-Private Sub UserForm_Initialize()
+Private Sub UserForm_Activate()
 
 Dim TimeandDate As String
 Dim Result As Double
@@ -402,7 +399,7 @@ Enrollment_ID_ROSA = currentEnrollment
 
 If Enrollment_ID_ROSA <> "" Then
 LastRow = Cells(Rows.Count, 2).End(xlUp).row
-Result = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range(Cells(11, NexantEnrollments.Enrollment_ID_ROSA), Cells(LastRow, NexantEnrollments.Enrollment_ID_ROSA))) + HeadingOffset
+Result = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range(Cells(11, NexantEnrollments.Enrollment_ID_ROSA), Cells(LastRow, NexantEnrollments.Enrollment_ID_ROSA)), 0) + HeadingOffset
 
 'Result = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range("B1", "B" & Range("B" & Rows.Count).End(xlUp).Row), 0)
 Else
@@ -511,6 +508,10 @@ Year_building_constructed.Value = Sheets("Enrollments").Cells(Result, NexantEnro
 End If
 
 'Sheets("Enrollments").Cells(Result, 12) = Format(ConvertLocalToGMT(Now(), True), "yyyymmdd:hhmmss")
+End Sub
+
+Private Sub UserForm_Initialize()
+
 
 End Sub
 

@@ -150,10 +150,6 @@ Private Sub lstEnrollments_Click()
 End Sub
 
 Private Sub UserForm_Activate()
-
-End Sub
-
-Private Sub UserForm_Initialize()
     Dim lastROSA As Integer
     Dim lastHEAP As Integer
 
@@ -175,6 +171,10 @@ Private Sub UserForm_Initialize()
     cmdMeasure.Enabled = False
     cmdUsage.Enabled = False
     cmdContextual.Enabled = False
+End Sub
+
+Private Sub UserForm_Initialize()
+
 End Sub
 
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)

@@ -15,7 +15,61 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
 
+Private Sub Cancel_Enrollment_ROSA_Click()
 
+Set wsDb = Worksheets("Enrollments")
+Set wsContacts = Worksheets("Contacts")
+
+If MsgBox("Cancelation Requires Management Approval, Has Approval Been Granted?", vbYesNo) = vbYes Then
+ 
+    
+
+    EID = Me.Enrollment_ID_ROSA
+    'last row database
+    wsDblr = wsDb.Cells(Rows.Count, NexantEnrollments.Enrollment_ID_ROSA).End(xlUp).row
+
+
+    'Verify that the values have been added to the Fields
+
+    If Me.Contact_Attempt_Notes_ROSA = "" Or Me.Contact_Attempt_Type_ROSA = "" Then
+        MsgBox ("Please fill in the Type and Notes of the Attempt")
+        Exit Sub
+    End If
+
+    For x = 11 To wsDblr
+        If wsDb.Cells(x, NexantEnrollments.Enrollment_ID_ROSA) = EID Then
+
+            wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment).NumberFormat = "@"
+            wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+            wsDb.Cells(x, NexantEnrollments.Comments_ROSA) = Me.Contact_Attempt_Notes_ROSA
+''''''''Do we need a Canceled Date Set and Canceled Date interfaced
+            wsDb.Cells(x, NexantEnrollments.Status_ROSA) = "CANCELED"
+            wsDb.Cells(x, NexantEnrollments.Status_Date_ROSA).NumberFormat = "@"
+            wsDb.Cells(x, NexantEnrollments.Status_Date_ROSA) = Format(LocalTimeToET(Now()), "YYYYMMDD")
+            wsDb.Cells(x, NexantEnrollments.Status_Time_ROSA).NumberFormat = "@"
+            wsDb.Cells(x, NexantEnrollments.Status_Time_ROSA) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now() + TimeValue("00:00:01")), "HHMMSS")
+                 
+        End If
+    Next x
+
+    'Append the new Contact to the Contact tab
+    wsClr = wsContacts.Cells(Rows.Count, NexantContacts.Contact_ID).End(xlUp).row
+    wsContacts.Cells(wsClr + 1, NexantContacts.Enrollment_ID_ROSA) = Me.Enrollment_ID_ROSA
+    wsContacts.Cells(wsClr + 1, NexantContacts.ROSA_Contact_Attempt_Number) = Me.Contact_Attempt_Number_ROSA
+    wsContacts.Cells(wsClr + 1, NexantContacts.ROSA_Contact_Attempt_Type) = Me.Contact_Attempt_Type_ROSA
+    wsContacts.Cells(wsClr + 1, NexantContacts.ROSA_Contact_Attempt_Notes) = Me.Contact_Attempt_Notes_ROSA
+    wsContacts.Cells(wsClr + 1, NexantContacts.ROSA_Contact_DateTime).NumberFormat = "@"
+    wsContacts.Cells(wsClr + 1, NexantContacts.ROSA_Contact_DateTime) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now() + TimeValue("00:00:01")), "HHMMSS")
+    wsContacts.Cells(wsClr + 1, NexantContacts.Contact_ID) = wsContacts.Cells(wsClr, NexantContacts.Contact_ID).Value + 1
+
+    'Clear Results
+    MsgBox "Form has been saved"
+    Call Clear_ROSA_Click
+    MsgBox ("Project Has Been Canceled")
+Else
+    Exit Sub
+End If
+End Sub
 
 Private Sub Previous_Contact_Attempt_Number_ROSA_Change()
 
@@ -56,6 +110,9 @@ End Sub
 
 Private Sub formreset()
 Me.Enrollment_ID_ROSA = ""
+        Me.Contact_Attempt_Number_ROSA = ""
+        Me.Contact_Attempt_Notes_ROSA = ""
+        'Me.Contact_Attempt_Type_ROSA.Clear
         Me.Previous_Contact_Attempt_Number_ROSA = ""
         Me.Previous_Contact_Attempt_Date_ROSA = ""
         Me.Previous_Contact_Attempt_Type_ROSA = ""
@@ -89,15 +146,25 @@ Private Sub Enrollment_Listbox_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
     Call formreset
     
     EID = Enrollment_Listbox.Value
+    
     'last row database
     wsDblr = wsDb.Cells(Rows.Count, NexantEnrollments.Enrollment_ID_ROSA).End(xlUp).row
-    
-    '''''Find latest contact attempt from Contacts tab using for loop from the bottom up
-    '''''Reference the  me.contact_attempt_number = contact number +1
-    
-    
-    'Retrive values from Database
     Me.Enrollment_ID_ROSA = EID
+    
+    'Find latest contact attempt from Contacts tab using for loop from the bottom up
+    wsClr = wsContacts.Cells(Rows.Count, NexantContacts.Enrollment_ID_ROSA).End(xlUp).row
+    'Set Contact attempt number in case there haven't been any prior Contacts
+    Me.Contact_Attempt_Number_ROSA = 1
+    
+    For j = 0 To wsClr - 1
+        If wsContacts.Cells(wsClr - j, NexantContacts.Enrollment_ID_ROSA) = EID And wsContacts.Cells(wsClr - j, NexantContacts.ROSA_Contact_Attempt_Number) <> "" Then
+            Me.Contact_Attempt_Number_ROSA = wsContacts.Cells(wsClr - j, NexantContacts.ROSA_Contact_Attempt_Number).Value + 1
+            j = wsClr - 1
+        End If
+    Next j
+    
+        'Retrive values from Database
+
     For x = 11 To wsDblr
         If wsDb.Cells(x, NexantEnrollments.Enrollment_ID_ROSA) = EID Then
             'pull data from database to form
@@ -176,20 +243,28 @@ Private Sub Save_ROSA_Click()
 
 Set wsDb = Worksheets("Enrollments")
 Set wsContacts = Worksheets("Contacts")
-'Enrollment_Listbox.Value = EID
+
 EID = Me.Enrollment_ID_ROSA
 'last row database
 wsDblr = wsDb.Cells(Rows.Count, NexantEnrollments.Enrollment_ID_ROSA).End(xlUp).row
 
 
 'Verify that the values have been added to the Fields
+If Me.Schedule_Date_ROSA <> "" And Me.Schedule_Time_ROSA = "" Then
+    MsgBox ("Please fill in the Schedule Time")
+    Exit Sub
+ElseIf Me.Schedule_Date_ROSA = "" And Me.Schedule_Time_ROSA <> "" Then
+    MsgBox ("Please fill in the Schedule Date")
+    Exit Sub
+ElseIf Me.Contact_Attempt_Notes_ROSA = "" Or Me.Contact_Attempt_Type_ROSA = "" Then
+    MsgBox ("Please fill in the Type and Notes of the Attempt")
+    Exit Sub
+End If
 
 For x = 11 To wsDblr
     If wsDb.Cells(x, NexantEnrollments.Enrollment_ID_ROSA) = EID Then
          wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Notes_ROSA) = Me.Contact_Attempt_Notes_ROSA
          wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Type_ROSA) = Me.Contact_Attempt_Type_ROSA
-         wsDb.Cells(x, NexantEnrollments.Schedule_Date_ROSA) = Me.Schedule_Date_ROSA
-         wsDb.Cells(x, NexantEnrollments.Schedule_Time_ROSA) = Me.Schedule_Time_ROSA
          wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment).NumberFormat = "@"
          wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
          wsDb.Cells(x, NexantEnrollments.Comments_ROSA) = Me.Contact_Attempt_Notes_ROSA
@@ -200,6 +275,7 @@ For x = 11 To wsDblr
             wsDb.Cells(x, NexantEnrollments.FIRST_CONTACT_date_set_ROSA) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
         End If
         'Set Status to Pending or Scheduled
+        ''''''''''Need a Pending Date Set and Pending Date Interfaced ROSA
         If Me.Schedule_Date_ROSA = "" Then
             wsDb.Cells(x, NexantEnrollments.Status_ROSA) = "PENDING"
             wsDb.Cells(x, NexantEnrollments.Status_Date_ROSA).NumberFormat = "@"
@@ -215,12 +291,24 @@ For x = 11 To wsDblr
             wsDb.Cells(x, NexantEnrollments.SCHEDULED_date_set_ROSA).NumberFormat = "@"
             wsDb.Cells(x, NexantEnrollments.SCHEDULED_date_set_ROSA) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now() + TimeValue("00:00:01")), "HHMMSS")
          End If
-    '''''Append the new Contact to the Contact tab
-    '''''Find the last row +1 and set values from form to tab
-              
+         
     End If
 Next x
+
+'Append the new Contact to the Contact tab
+wsClr = wsContacts.Cells(Rows.Count, NexantContacts.Contact_ID).End(xlUp).row
+wsContacts.Cells(wsClr + 1, NexantContacts.Enrollment_ID_ROSA) = Me.Enrollment_ID_ROSA
+wsContacts.Cells(wsClr + 1, NexantContacts.ROSA_Contact_Attempt_Number) = Me.Contact_Attempt_Number_ROSA
+wsContacts.Cells(wsClr + 1, NexantContacts.ROSA_Contact_Attempt_Type) = Me.Contact_Attempt_Type_ROSA
+wsContacts.Cells(wsClr + 1, NexantContacts.ROSA_Contact_Attempt_Notes) = Me.Contact_Attempt_Notes_ROSA
+wsContacts.Cells(wsClr + 1, NexantContacts.ROSA_Contact_DateTime).NumberFormat = "@"
+wsContacts.Cells(wsClr + 1, NexantContacts.ROSA_Contact_DateTime) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now() + TimeValue("00:00:01")), "HHMMSS")
+wsContacts.Cells(wsClr + 1, NexantContacts.Contact_ID) = wsContacts.Cells(wsClr, NexantContacts.Contact_ID).Value + 1
+
+'Clear Results
+MsgBox "Form has been saved"
 Call Clear_ROSA_Click
+
 End Sub
 
 Private Sub UserForm_Activate()

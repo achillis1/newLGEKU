@@ -41,7 +41,7 @@ End Sub
 
 
 
-Private Sub UserForm_Initialize()
+Private Sub UserForm_Activate()
 '    Application.Visible = False
     
     EnrollmentFirstDataLine = 11
@@ -49,6 +49,10 @@ Private Sub UserForm_Initialize()
     PMSheetName = "PM"
     InboundLastReadCol = 5
     currentEnrollment = ""
+
+End Sub
+
+Private Sub UserForm_Initialize()
 End Sub
 
 Private Sub UserForm_Terminate()
