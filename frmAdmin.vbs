@@ -153,8 +153,8 @@ Private Sub UserForm_Initialize()
     Dim lastROSA As Integer
     Dim lastHEAP As Integer
 
-    lastROSA = Worksheets(ImportSheetName).Range("B" & Rows.Count).End(xlUp).Row
-    lastHEAP = Worksheets(ImportSheetName).Range("C" & Rows.Count).End(xlUp).Row
+    lastROSA = Worksheets(ImportSheetName).Range("B" & Rows.Count).End(xlUp).row
+    lastHEAP = Worksheets(ImportSheetName).Range("C" & Rows.Count).End(xlUp).row
     LastRow = WorksheetFunction.Max(lastROSA, lastHEAP)
     
     For i = EnrollmentFirstDataLine To LastRow

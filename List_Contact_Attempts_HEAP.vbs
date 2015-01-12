@@ -14,6 +14,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
+
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
     If CloseMode = 0 Then
         Cancel = True
@@ -47,12 +48,12 @@ Call UserForm_Initialize
 End Sub
 Private Sub Enrollment_Listbox_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
 
-Set wsdb = Worksheets("Enrollments")
+Set wsDb = Worksheets("Enrollments")
 
 'Enrollment_Listbox.Value = EID
 EID = Enrollment_Listbox.Value
 'last row database
-wsDblr = wsdb.Cells(Rows.Count, NexantEnrollments.Enrollment_ID_HEAP).End(xlUp).Row
+wsDblr = wsDb.Cells(Rows.Count, NexantEnrollments.Enrollment_ID_HEAP).End(xlUp).row
 
 
 Me.First_Contact_Attempt_Notes_HEAP.Enabled = True
@@ -80,27 +81,27 @@ Me.Fifth_Contact_Attempt_Type_HEAP.BackColor = rgbWhite
 'Retrive values from Database
 Me.Enrollment_ID_HEAP = EID
 For x = 11 To wsDblr
-    If wsdb.Cells(x, NexantEnrollments.Enrollment_ID_HEAP) = EID Then
+    If wsDb.Cells(x, NexantEnrollments.Enrollment_ID_HEAP) = EID Then
         'push data from database to form
         'HEAP Scheduling
 
-        Me.First_Contact_Attempt_Date_HEAP = wsdb.Cells(x, NexantEnrollments.First_Contact_Attempt_Date_HEAP)
-        Me.First_Contact_Attempt_Notes_HEAP = wsdb.Cells(x, NexantEnrollments.First_Contact_Attempt_Notes_HEAP)
-        Me.First_Contact_Attempt_Type_HEAP = wsdb.Cells(x, NexantEnrollments.First_Contact_Attempt_Type_HEAP)
-        Me.Second_Contact_Attempt_Date_HEAP = wsdb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Date_HEAP)
-        Me.Second_Contact_Attempt_Notes_HEAP = wsdb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Notes_HEAP)
-        Me.Second_Contact_Attempt_Type_HEAP = wsdb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Type_HEAP)
-        Me.Third_Contact_Attempt_Date_HEAP = wsdb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Date_HEAP)
-        Me.Third_Contact_Attempt_Notes_HEAP = wsdb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Notes_HEAP)
-        Me.Third_Contact_Attempt_Type_HEAP = wsdb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Type_HEAP)
-        Me.Fourth_Contact_Attempt_Date_HEAP = wsdb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Date_HEAP)
-        Me.Fourth_Contact_Attempt_Notes_HEAP = wsdb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Notes_HEAP)
-        Me.Fourth_Contact_Attempt_Type_HEAP = wsdb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Type_HEAP)
-        Me.Fifth_Contact_Attempt_Date_HEAP = wsdb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Date_HEAP)
-        Me.Fifth_Contact_Attempt_Notes_HEAP = wsdb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Notes_HEAP)
-        Me.Fifth_Contact_Attempt_Type_HEAP = wsdb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Type_HEAP)
-        Me.Schedule_Date_HEAP = wsdb.Cells(x, NexantEnrollments.Schedule_Date_HEAP)
-        Me.Schedule_Time_HEAP = wsdb.Cells(x, NexantEnrollments.Schedule_Time_HEAP)
+        Me.First_Contact_Attempt_Date_HEAP = wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Date_HEAP)
+        Me.First_Contact_Attempt_Notes_HEAP = wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Notes_HEAP)
+        Me.First_Contact_Attempt_Type_HEAP = wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Type_HEAP)
+        Me.Second_Contact_Attempt_Date_HEAP = wsDb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Date_HEAP)
+        Me.Second_Contact_Attempt_Notes_HEAP = wsDb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Notes_HEAP)
+        Me.Second_Contact_Attempt_Type_HEAP = wsDb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Type_HEAP)
+        Me.Third_Contact_Attempt_Date_HEAP = wsDb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Date_HEAP)
+        Me.Third_Contact_Attempt_Notes_HEAP = wsDb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Notes_HEAP)
+        Me.Third_Contact_Attempt_Type_HEAP = wsDb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Type_HEAP)
+        Me.Fourth_Contact_Attempt_Date_HEAP = wsDb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Date_HEAP)
+        Me.Fourth_Contact_Attempt_Notes_HEAP = wsDb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Notes_HEAP)
+        Me.Fourth_Contact_Attempt_Type_HEAP = wsDb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Type_HEAP)
+        Me.Fifth_Contact_Attempt_Date_HEAP = wsDb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Date_HEAP)
+        Me.Fifth_Contact_Attempt_Notes_HEAP = wsDb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Notes_HEAP)
+        Me.Fifth_Contact_Attempt_Type_HEAP = wsDb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Type_HEAP)
+        Me.Schedule_Date_HEAP = wsDb.Cells(x, NexantEnrollments.Schedule_Date_HEAP)
+        Me.Schedule_Time_HEAP = wsDb.Cells(x, NexantEnrollments.Schedule_Time_HEAP)
         
     End If
 Next x
@@ -204,12 +205,12 @@ End Sub
 
 Private Sub Save_HEAP_Click()
 
-Set wsdb = Worksheets("Enrollments")
+Set wsDb = Worksheets("Enrollments")
 
 'Enrollment_Listbox.Value = EID
 EID = Me.Enrollment_ID_HEAP
 'last row database
-wsDblr = wsdb.Cells(Rows.Count, NexantEnrollments.Enrollment_ID_HEAP).End(xlUp).Row
+wsDblr = wsDb.Cells(Rows.Count, NexantEnrollments.Enrollment_ID_HEAP).End(xlUp).row
 
 'Verify that the values have been added to the Fields
 If Me.First_Contact_Attempt_Type_HEAP.Enabled = True Then
@@ -245,156 +246,156 @@ End If
 
 
 For x = 11 To wsDblr
-    If wsdb.Cells(x, NexantEnrollments.Enrollment_ID_HEAP) = EID Then
-         wsdb.Cells(x, NexantEnrollments.First_Contact_Attempt_Notes_HEAP) = Me.First_Contact_Attempt_Notes_HEAP
-         wsdb.Cells(x, NexantEnrollments.First_Contact_Attempt_Type_HEAP) = Me.First_Contact_Attempt_Type_HEAP
-         wsdb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Notes_HEAP) = Me.Second_Contact_Attempt_Notes_HEAP
-         wsdb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Type_HEAP) = Me.Second_Contact_Attempt_Type_HEAP
-         wsdb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Notes_HEAP) = Me.Third_Contact_Attempt_Notes_HEAP
-         wsdb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Type_HEAP) = Me.Third_Contact_Attempt_Type_HEAP
-         wsdb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Notes_HEAP) = Me.Fourth_Contact_Attempt_Notes_HEAP
-         wsdb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Type_HEAP) = Me.Fourth_Contact_Attempt_Type_HEAP
-         wsdb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Notes_HEAP) = Me.Fifth_Contact_Attempt_Notes_HEAP
-         wsdb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Type_HEAP) = Me.Fifth_Contact_Attempt_Type_HEAP
-         wsdb.Cells(x, NexantEnrollments.Schedule_Date_HEAP) = Me.Schedule_Date_HEAP
-         wsdb.Cells(x, NexantEnrollments.Schedule_Time_HEAP) = Me.Schedule_Time_HEAP
-         wsdb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment).NumberFormat = "@"
-         wsdb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+    If wsDb.Cells(x, NexantEnrollments.Enrollment_ID_HEAP) = EID Then
+         wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Notes_HEAP) = Me.First_Contact_Attempt_Notes_HEAP
+         wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Type_HEAP) = Me.First_Contact_Attempt_Type_HEAP
+         wsDb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Notes_HEAP) = Me.Second_Contact_Attempt_Notes_HEAP
+         wsDb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Type_HEAP) = Me.Second_Contact_Attempt_Type_HEAP
+         wsDb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Notes_HEAP) = Me.Third_Contact_Attempt_Notes_HEAP
+         wsDb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Type_HEAP) = Me.Third_Contact_Attempt_Type_HEAP
+         wsDb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Notes_HEAP) = Me.Fourth_Contact_Attempt_Notes_HEAP
+         wsDb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Type_HEAP) = Me.Fourth_Contact_Attempt_Type_HEAP
+         wsDb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Notes_HEAP) = Me.Fifth_Contact_Attempt_Notes_HEAP
+         wsDb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Type_HEAP) = Me.Fifth_Contact_Attempt_Type_HEAP
+         wsDb.Cells(x, NexantEnrollments.Schedule_Date_HEAP) = Me.Schedule_Date_HEAP
+         wsDb.Cells(x, NexantEnrollments.Schedule_Time_HEAP) = Me.Schedule_Time_HEAP
+         wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment).NumberFormat = "@"
+         wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
          
          
        'Select the appropiate status and update the specific dates/times
         If Me.Fifth_Contact_Attempt_Type_HEAP <> "" Then
             If Me.Schedule_Date_HEAP = "" Then
-                wsdb.Cells(x, NexantEnrollments.Status_HEAP) = "PENDING"
-                wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
-                wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
-                wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
-                wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-                wsdb.Cells(x, NexantEnrollments.PENDING_5_date_set_HEAP).NumberFormat = "@"
-                wsdb.Cells(x, NexantEnrollments.PENDING_5_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-                wsdb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.Fifth_Contact_Attempt_Notes_HEAP
-                wsdb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.Fifth_Contact_Attempt_Type_HEAP
-                wsdb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Date_HEAP).NumberFormat = "@"
-                wsdb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "PENDING"
+                wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
+                wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
+                wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
+                wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                wsDb.Cells(x, NexantEnrollments.PENDING_5_date_set_HEAP).NumberFormat = "@"
+                wsDb.Cells(x, NexantEnrollments.PENDING_5_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                wsDb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.Fifth_Contact_Attempt_Notes_HEAP
+                wsDb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.Fifth_Contact_Attempt_Type_HEAP
+                wsDb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Date_HEAP).NumberFormat = "@"
+                wsDb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
             Else
-                wsdb.Cells(x, NexantEnrollments.Status_HEAP) = "SCHEDULED"
-                wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
-                wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
-                wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
-                wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-                wsdb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP).NumberFormat = "@"
-                wsdb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-                wsdb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.Fifth_Contact_Attempt_Notes_HEAP
-                wsdb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.Fifth_Contact_Attempt_Type_HEAP
-                wsdb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Date_HEAP).NumberFormat = "@"
-                wsdb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "SCHEDULED"
+                wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
+                wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
+                wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
+                wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                wsDb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP).NumberFormat = "@"
+                wsDb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                wsDb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.Fifth_Contact_Attempt_Notes_HEAP
+                wsDb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.Fifth_Contact_Attempt_Type_HEAP
+                wsDb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Date_HEAP).NumberFormat = "@"
+                wsDb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
             End If
 
             ElseIf Me.Fourth_Contact_Attempt_Type_HEAP <> "" Then
                 If Me.Schedule_Date_HEAP = "" Then
-                    wsdb.Cells(x, NexantEnrollments.Status_HEAP) = "PENDING"
-                    wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
-                    wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
-                    wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
-                    wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-                    wsdb.Cells(x, NexantEnrollments.PENDING_4_date_set_HEAP).NumberFormat = "@"
-                    wsdb.Cells(x, NexantEnrollments.PENDING_4_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-                    wsdb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.Fourth_Contact_Attempt_Notes_HEAP
-                    wsdb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.Fourth_Contact_Attempt_Type_HEAP
-                    wsdb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Date_HEAP).NumberFormat = "@"
-                    wsdb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                    wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "PENDING"
+                    wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
+                    wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
+                    wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
+                    wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                    wsDb.Cells(x, NexantEnrollments.PENDING_4_date_set_HEAP).NumberFormat = "@"
+                    wsDb.Cells(x, NexantEnrollments.PENDING_4_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                    wsDb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.Fourth_Contact_Attempt_Notes_HEAP
+                    wsDb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.Fourth_Contact_Attempt_Type_HEAP
+                    wsDb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Date_HEAP).NumberFormat = "@"
+                    wsDb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
                 Else
-                    wsdb.Cells(x, NexantEnrollments.Status_HEAP) = "SCHEDULED"
-                    wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
-                    wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
-                    wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
-                    wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-                    wsdb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP).NumberFormat = "@"
-                    wsdb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-                    wsdb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.Fourth_Contact_Attempt_Notes_HEAP
-                    wsdb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.Fourth_Contact_Attempt_Type_HEAP
-                    wsdb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Date_HEAP).NumberFormat = "@"
-                    wsdb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                    wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "SCHEDULED"
+                    wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
+                    wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
+                    wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
+                    wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                    wsDb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP).NumberFormat = "@"
+                    wsDb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                    wsDb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.Fourth_Contact_Attempt_Notes_HEAP
+                    wsDb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.Fourth_Contact_Attempt_Type_HEAP
+                    wsDb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Date_HEAP).NumberFormat = "@"
+                    wsDb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
                 End If
                 ElseIf Me.Third_Contact_Attempt_Type_HEAP <> "" Then
                     If Me.Schedule_Date_HEAP = "" Then
-                        wsdb.Cells(x, NexantEnrollments.Status_HEAP) = "PENDING"
-                        wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
-                        wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
-                        wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
-                        wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-                        wsdb.Cells(x, NexantEnrollments.PENDING_3_date_set_HEAP).NumberFormat = "@"
-                        wsdb.Cells(x, NexantEnrollments.PENDING_3_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-                        wsdb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.Third_Contact_Attempt_Notes_HEAP
-                        wsdb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.Third_Contact_Attempt_Type_HEAP
-                        wsdb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Date_HEAP).NumberFormat = "@"
-                        wsdb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                        wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "PENDING"
+                        wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
+                        wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
+                        wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
+                        wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                        wsDb.Cells(x, NexantEnrollments.PENDING_3_date_set_HEAP).NumberFormat = "@"
+                        wsDb.Cells(x, NexantEnrollments.PENDING_3_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                        wsDb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.Third_Contact_Attempt_Notes_HEAP
+                        wsDb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.Third_Contact_Attempt_Type_HEAP
+                        wsDb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Date_HEAP).NumberFormat = "@"
+                        wsDb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
                     Else
-                        wsdb.Cells(x, NexantEnrollments.Status_HEAP) = "SCHEDULED"
-                        wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
-                        wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
-                        wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
-                        wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-                        wsdb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP).NumberFormat = "@"
-                        wsdb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-                        wsdb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.Third_Contact_Attempt_Notes_HEAP
-                        wsdb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.Third_Contact_Attempt_Type_HEAP
-                        wsdb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Date_HEAP).NumberFormat = "@"
-                        wsdb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                        wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "SCHEDULED"
+                        wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
+                        wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
+                        wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
+                        wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                        wsDb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP).NumberFormat = "@"
+                        wsDb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                        wsDb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.Third_Contact_Attempt_Notes_HEAP
+                        wsDb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.Third_Contact_Attempt_Type_HEAP
+                        wsDb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Date_HEAP).NumberFormat = "@"
+                        wsDb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
                     End If
                     ElseIf Me.Second_Contact_Attempt_Type_HEAP <> "" And Me.Schedule_Date_HEAP = "" Then
                         If Me.Schedule_Date_HEAP = "" Then
-                            wsdb.Cells(x, NexantEnrollments.Status_HEAP) = "PENDING"
-                            wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
-                            wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
-                            wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
-                            wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-                            wsdb.Cells(x, NexantEnrollments.PENDING_2_date_set_HEAP).NumberFormat = "@"
-                            wsdb.Cells(x, NexantEnrollments.PENDING_2_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-                            wsdb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.Second_Contact_Attempt_Notes_HEAP
-                            wsdb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.Second_Contact_Attempt_Type_HEAP
-                            wsdb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Date_HEAP).NumberFormat = "@"
-                            wsdb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                            wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "PENDING"
+                            wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
+                            wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
+                            wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
+                            wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                            wsDb.Cells(x, NexantEnrollments.PENDING_2_date_set_HEAP).NumberFormat = "@"
+                            wsDb.Cells(x, NexantEnrollments.PENDING_2_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                            wsDb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.Second_Contact_Attempt_Notes_HEAP
+                            wsDb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.Second_Contact_Attempt_Type_HEAP
+                            wsDb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Date_HEAP).NumberFormat = "@"
+                            wsDb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
                         Else
-                            wsdb.Cells(x, NexantEnrollments.Status_HEAP) = "SCHEDULED"
-                            wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
-                            wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
-                            wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
-                            wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-                            wsdb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP).NumberFormat = "@"
-                            wsdb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-                            wsdb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.Second_Contact_Attempt_Notes_HEAP
-                            wsdb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.Second_Contact_Attempt_Type_HEAP
-                            wsdb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Date_HEAP).NumberFormat = "@"
-                            wsdb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                            wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "SCHEDULED"
+                            wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
+                            wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
+                            wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
+                            wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                            wsDb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP).NumberFormat = "@"
+                            wsDb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                            wsDb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.Second_Contact_Attempt_Notes_HEAP
+                            wsDb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.Second_Contact_Attempt_Type_HEAP
+                            wsDb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Date_HEAP).NumberFormat = "@"
+                            wsDb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
                         End If
                         ElseIf Me.First_Contact_Attempt_Type_HEAP <> "" Then
                             If Me.Schedule_Date_HEAP = "" Then
-                                wsdb.Cells(x, NexantEnrollments.Status_HEAP) = "PENDING"
-                                wsdb.Cells(x, NexantEnrollments.FIRST_CONTACT_date_set_HEAP).NumberFormat = "@"
-                                wsdb.Cells(x, NexantEnrollments.FIRST_CONTACT_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-                                wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
-                                wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
-                                wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
-                                wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now() + TimeValue("00:00:01")), "HHMMSS")
-                                wsdb.Cells(x, NexantEnrollments.PENDING_1_date_set_HEAP).NumberFormat = "@"
-                                wsdb.Cells(x, NexantEnrollments.PENDING_1_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now() + TimeValue("00:00:01")), "HHMMSS")
-                                wsdb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.First_Contact_Attempt_Notes_HEAP
-                                wsdb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.First_Contact_Attempt_Type_HEAP
-                                wsdb.Cells(x, NexantEnrollments.First_Contact_Attempt_Date_HEAP).NumberFormat = "@"
-                                wsdb.Cells(x, NexantEnrollments.First_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                                wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "PENDING"
+                                wsDb.Cells(x, NexantEnrollments.FIRST_CONTACT_date_set_HEAP).NumberFormat = "@"
+                                wsDb.Cells(x, NexantEnrollments.FIRST_CONTACT_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                                wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
+                                wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
+                                wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
+                                wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now() + TimeValue("00:00:01")), "HHMMSS")
+                                wsDb.Cells(x, NexantEnrollments.PENDING_1_date_set_HEAP).NumberFormat = "@"
+                                wsDb.Cells(x, NexantEnrollments.PENDING_1_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now() + TimeValue("00:00:01")), "HHMMSS")
+                                wsDb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.First_Contact_Attempt_Notes_HEAP
+                                wsDb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.First_Contact_Attempt_Type_HEAP
+                                wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Date_HEAP).NumberFormat = "@"
+                                wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
                             Else
-                                wsdb.Cells(x, NexantEnrollments.Status_HEAP) = "SCHEDULED"
-                                wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
-                                wsdb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
-                                wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
-                                wsdb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-                                wsdb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP).NumberFormat = "@"
-                                wsdb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-                                wsdb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.First_Contact_Attempt_Notes_HEAP
-                                wsdb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.First_Contact_Attempt_Type_HEAP
-                                wsdb.Cells(x, NexantEnrollments.First_Contact_Attempt_Date_HEAP).NumberFormat = "@"
-                                wsdb.Cells(x, NexantEnrollments.First_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                                wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "SCHEDULED"
+                                wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
+                                wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
+                                wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
+                                wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                                wsDb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP).NumberFormat = "@"
+                                wsDb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                                wsDb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.First_Contact_Attempt_Notes_HEAP
+                                wsDb.Cells(x, NexantEnrollments.Customer_contact_mode_HEAP) = Me.First_Contact_Attempt_Type_HEAP
+                                wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Date_HEAP).NumberFormat = "@"
+                                wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
                             End If
                         
         End If
@@ -404,22 +405,22 @@ Next x
 Call Clear_HEAP_Click
 End Sub
 
-Private Sub UserForm_Initialize()
+Private Sub UserForm_Activate()
 
-Set wsdb = Worksheets("Enrollments")
+Set wsDb = Worksheets("Enrollments")
 
 'last row database
-wsDblr = wsdb.Cells(Rows.Count, NexantEnrollments.Enrollment_ID_HEAP).End(xlUp).Row
+wsDblr = wsDb.Cells(Rows.Count, NexantEnrollments.Enrollment_ID_HEAP).End(xlUp).row
 
 'find row in Database for Enrollment ID
 For x = 11 To wsDblr
-    If wsdb.Cells(x, NexantEnrollments.Status_HEAP) = "RECEIVED AT VENDOR" Or _
-    wsdb.Cells(x, NexantEnrollments.Status_HEAP) = "FIRST CONTACT" Or _
-    wsdb.Cells(x, NexantEnrollments.Status_HEAP) = "PENDING" Then
+    If wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "RECEIVED AT VENDOR" Or _
+    wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "FIRST CONTACT" Or _
+    wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "PENDING" Then
         'push data from database to form
         'HEAP Scheduling
         With Enrollment_Listbox
-            .AddItem wsdb.Cells(x, NexantEnrollments.Enrollment_ID_HEAP)
+            .AddItem wsDb.Cells(x, NexantEnrollments.Enrollment_ID_HEAP)
         End With
     
     End If

@@ -1,17 +1,32 @@
 Attribute VB_Name = "TimeZone"
 Option Explicit
 
-Public Declare Function SystemTimeToFileTime Lib _
-  "kernel32" (lpSystemTime As SYSTEMTIME, _
-  lpFileTime As FILETIME) As Long
+#If VBA7 Then
+    Public Declare PtrSafe Function SystemTimeToFileTime Lib _
+      "kernel32" (lpSystemTime As SYSTEMTIME, _
+      lpFileTime As FILETIME) As Long
+    
+    Public Declare PtrSafe Function LocalFileTimeToFileTime Lib _
+      "kernel32" (lpLocalFileTime As FILETIME, _
+      lpFileTime As FILETIME) As Long
+    
+    Public Declare PtrSafe Function FileTimeToSystemTime Lib _
+      "kernel32" (lpFileTime As FILETIME, lpSystemTime _
+      As SYSTEMTIME) As Long
 
-Public Declare Function LocalFileTimeToFileTime Lib _
-  "kernel32" (lpLocalFileTime As FILETIME, _
-  lpFileTime As FILETIME) As Long
-
-Public Declare Function FileTimeToSystemTime Lib _
-  "kernel32" (lpFileTime As FILETIME, lpSystemTime _
-  As SYSTEMTIME) As Long
+#Else
+    Public Declare Function SystemTimeToFileTime Lib _
+      "kernel32" (lpSystemTime As SYSTEMTIME, _
+      lpFileTime As FILETIME) As Long
+    
+    Public Declare Function LocalFileTimeToFileTime Lib _
+      "kernel32" (lpLocalFileTime As FILETIME, _
+      lpFileTime As FILETIME) As Long
+    
+    Public Declare Function FileTimeToSystemTime Lib _
+      "kernel32" (lpFileTime As FILETIME, lpSystemTime _
+      As SYSTEMTIME) As Long
+#End If
 
 Public Type FILETIME
     dwLowDateTime As Long

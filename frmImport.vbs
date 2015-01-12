@@ -83,8 +83,8 @@ Private Sub importfile()
         Dim lastROSA As Integer
         Dim lastHEAP As Integer
         Dim LastRow As Integer
-        lastROSA = Worksheets(ImportSheetName).Range("B" & Rows.Count).End(xlUp).Row
-        lastHEAP = Worksheets(ImportSheetName).Range("C" & Rows.Count).End(xlUp).Row
+        lastROSA = Worksheets(ImportSheetName).Range("B" & Rows.Count).End(xlUp).row
+        lastHEAP = Worksheets(ImportSheetName).Range("C" & Rows.Count).End(xlUp).row
         LastRow = WorksheetFunction.Max(lastROSA, lastHEAP)
         
         If LastRow < EnrollmentFirstDataLine - 1 Then
@@ -134,7 +134,7 @@ Private Sub importfile()
                     If ir = 0 Then
                         If OUTReportType = "OUTBOUND ENROLLMENT" Then
                             ir = LastRow + 1
-                            If ShortProgramName = "HEAP" Then MsgBox "FYI, the HEAP enrollment ID " + CStr(EnrollmentID) + " doesn't exist."
+                            'If ShortProgramName = "HEAP" Then MsgBox "FYI, the HEAP enrollment ID " + CStr(EnrollmentID) + " doesn't exist."
                         Else
                             MsgBox "The enrollment ID " + CStr(EnrollmentID) + " is not found. Please import the enrollment OUT file first."
                             Exit Sub

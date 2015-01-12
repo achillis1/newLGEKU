@@ -299,7 +299,7 @@ Enrollment_ID_ROSA = "000000613312"
 
 HeadingOffset = 10
 
-LastRow = Cells(Rows.Count, 2).End(xlUp).Row
+LastRow = Cells(Rows.Count, 2).End(xlUp).row
 Result = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range(Cells(11, NexantEnrollments.Enrollment_ID_ROSA), Cells(LastRow, NexantEnrollments.Enrollment_ID_ROSA))) + HeadingOffset
 
 Sheets("Enrollments").Cells(Result, NexantEnrollments.Last_Modified_Date_Enrollment) = Format(LocalTimeToET(Now()), "yyyymmdd:hhmmss")
@@ -397,7 +397,7 @@ HeadingOffset = 10
 Enrollment_ID_ROSA = currentEnrollment
 
 If Enrollment_ID_ROSA <> "" Then
-LastRow = Cells(Rows.Count, 2).End(xlUp).Row
+LastRow = Cells(Rows.Count, 2).End(xlUp).row
 Result = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range(Cells(11, NexantEnrollments.Enrollment_ID_ROSA), Cells(LastRow, NexantEnrollments.Enrollment_ID_ROSA))) + HeadingOffset
 
 'Result = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range("B1", "B" & Range("B" & Rows.Count).End(xlUp).Row), 0)

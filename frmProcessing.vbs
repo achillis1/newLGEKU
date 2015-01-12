@@ -23,22 +23,22 @@ End Sub
 
 Private Sub HEAP_Load_Results_Click()
 Me.Hide
-Load_Results_HEAP.Show
+Load_Results_HEAP.Show vbModeless
 End Sub
 
 Private Sub HEAP_Scheduling_Click()
 Me.Hide
-List_Contact_Attempts_HEAP.Show
+List_Contact_Attempts_HEAP.Show vbModeless
 End Sub
 
 Private Sub ROSA_Load_Results_Click()
 Me.Hide
-Load_Results_ROSA.Show
+Load_Results_ROSA.Show vbModeless
 End Sub
 
 Private Sub ROSA_Scheduling_Click()
 Me.Hide
-List_Contact_Attempts_ROSA.Show
+List_Contact_Attempts_ROSA.Show vbModeless
 End Sub
 
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)

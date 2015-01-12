@@ -414,6 +414,7 @@ Business_Partner_Number_ROSA
 Comments_ROSA
 Dog_or_Cat_Flag_ROSA
 FILE_NAME_ROSA
+Site_Visit_File_ROSA
 First_and_last_name_of_main_Auditor_ROSA
 Number_of_Auditors_ROSA
 Number_of_stories_above_grade_ROSA
@@ -1051,6 +1052,7 @@ Business_Partner_Number_HEAP
 Comments_HEAP
 Dog_or_Cat_Flag_HEAP
 FILE_NAME_HEAP
+Site_Visit_File_HEAP
 First_and_last_name_of_main_Auditor_HEAP
 Number_of_Auditors_HEAP
 Number_of_stories_above_grade_HEAP

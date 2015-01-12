@@ -79,7 +79,7 @@ HeadingOffset = 10
 Enrollment_ID_ROSA = currentEnrollment
 
 If Enrollment_ID_ROSA <> "" Then
-LastRow = Cells(Rows.Count, 2).End(xlUp).Row
+LastRow = Cells(Rows.Count, 2).End(xlUp).row
 
 'Results = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range("B1", "B" & Range("B" & Rows.Count).End(xlUp).Row), 0)
 Results = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range(Cells(11, NexantEnrollments.Enrollment_ID_ROSA), Cells(LastRow, NexantEnrollments.Enrollment_ID_ROSA))) + HeadingOffset
