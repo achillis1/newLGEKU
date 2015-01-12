@@ -149,6 +149,10 @@ Private Sub lstEnrollments_Click()
     
 End Sub
 
+Private Sub UserForm_Activate()
+
+End Sub
+
 Private Sub UserForm_Initialize()
     Dim lastROSA As Integer
     Dim lastHEAP As Integer

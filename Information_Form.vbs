@@ -132,6 +132,10 @@ End If
 
 End Sub
 
+Private Sub MultiPage1_Change()
+
+End Sub
+
 Private Sub Premise_ID_Exit(ByVal Cancel As MSForms.ReturnBoolean)
 If Len(Premise_ID) = 10 And IsNumeric(Premise_ID) = True Then
 Premise_ID.BackColor = &H80000005
@@ -295,7 +299,7 @@ Dim Enrollment_ID_ROSA As String
 Dim HeadingOffset As Double
 Dim LastRow As String
 
-Enrollment_ID_ROSA = "000000613312"
+Enrollment_ID_ROSA = currentEnrollment
 
 HeadingOffset = 10
 
