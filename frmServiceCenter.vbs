@@ -47,6 +47,7 @@ Private Sub UserForm_Activate()
     EnrollmentFirstDataLine = 11
     ImportSheetName = "Enrollments"
     PMSheetName = "PM"
+    MessageSheetName = "Messages"
     InboundLastReadCol = 5
     currentEnrollment = ""
 

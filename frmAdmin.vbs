@@ -29,17 +29,17 @@ Private Sub cmdHeap_Click()
         Me.Hide
         currentEnrollment = Left(lstEnrollments.Text, Len(lstEnrollments.Text) - 5)
     End If
-    HEAP_Scheduling_Status_Info.Show
+    HEAP_Scheduling_Status_Info.Show vbModeless
 End Sub
 
 Private Sub cmdHeapContact_Click()
 Me.Hide
-List_Contact_Attempts_HEAP.Show
+List_Contact_Attempts_HEAP.Show vbModeless
 End Sub
 
 Private Sub cmdInfo_Click()
 Me.Hide
-Information_Form.Show
+Information_Form.Show vbModeless
 End Sub
 
 Private Sub cmdReset_Click()
@@ -71,12 +71,12 @@ Private Sub cmdROSA_Click()
         currentEnrollment = Left(lstEnrollments.Text, Len(lstEnrollments.Text) - 5)
     End If
 
-    ROSA_Scheduling_Status_Info.Show
+    ROSA_Scheduling_Status_Info.Show vbModeless
 End Sub
 
 Private Sub cmdRosaContact_Click()
 Me.Hide
-List_Contact_Attempts_ROSA.Show
+List_Contact_Attempts_ROSA.Show vbModeless
 End Sub
 
 Private Sub cmdSearch_Click()

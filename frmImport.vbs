@@ -59,6 +59,8 @@ Private Sub importfile()
     'parse records
     Dim ShortProgramName As String
     Dim OUTReportType As String
+    Dim ReadPremiseID As String
+    Dim FormPremiseID As String
     Dim x() As String
     
     x1 = Split(str(1), ",")
@@ -75,8 +77,12 @@ Private Sub importfile()
         Exit Sub
     End If
 
-    For k = 2 To LineNum - 1
+    Dim errflg As Boolean
+    errflg = False
+    Dim errfirstrow As Integer
+    errfirstrow = Worksheets(MessageSheetName).Range("B" & Rows.Count).End(xlUp).row
     
+    For k = 2 To LineNum - 1
         Dim lastROSA As Integer
         Dim lastHEAP As Integer
         Dim LastRow As Integer
@@ -90,12 +96,13 @@ Private Sub importfile()
         End If
     
         x = Split(str(k), ",")
+        
         Dim EnrollmentID As String
-        EnrollmentID = x(LGEEnrollments.Enrollment_ID) 'or LGEUsage.Enrollment_ID
-        
         Dim TransactionType As String
+        EnrollmentID = x(LGEEnrollments.Enrollment_ID) 'or LGEUsage.Enrollment_ID
+        ReadPremiseID = x(LGEEnrollments.Premise_ID) ' premise id
         TransactionType = x(LGEEnrollments.Transaction_Type) ' or LGEUsage.Transaction_Type
-        
+            
         Dim ROSAID As String
         Dim HEAPID As String
         Dim ir As Integer
@@ -103,26 +110,48 @@ Private Sub importfile()
         If LastRow = EnrollmentFirstDataLine - 1 Then
             ir = EnrollmentFirstDataLine
         Else
-            For i = EnrollmentFirstDataLine To LastRow
-                ROSAID = Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_ROSA).Value
-                HEAPID = Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_HEAP).Value
-                If ROSAID = "" And HEAPID <> "" Then existingID = HEAPID
-                If ROSAID <> "" And HEAPID = "" Then existingID = ROSAID
-                
-                If existingID = EnrollmentID Then
-                    Select Case TransactionType
-                        Case "N"
-                            If OUTReportType = "OUTBOUND ENROLLMENT" Then '  Or OUTReportType = "OUTBOUND USAGE"
-                                MsgBox "The enrollment ID exists. Please check the Enrollment ID: " + CStr(EnrollmentID)
-                                Exit Sub
-                            Else
+            For i = EnrollmentFirstDataLine To LastRow 'LOOP read rows
+                If OUTReportType = "OUTBOUND ENROLLMENT" Then
+                    If ShortProgramName = "ROSA" Then
+                        ROSAID = Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_ROSA).Value
+                        If ROSAID <> "" And HEAPID = "" Then existingID = ROSAID
+                    End If
+                    If ShortProgramName = "HEAP" Then
+                        HEAPID = Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_HEAP).Value
+                        If ROSAID = "" And HEAPID <> "" Then existingID = HEAPID
+                    End If
+                    
+                    If existingID = EnrollmentID Then
+                        Select Case TransactionType
+                            Case "N"
+                                errflg = True
+                                errorMsg = "The enrollment ID exists. Please check the Enrollment ID: " + EnrollmentID
+                                'MsgBox errorMsg
+                                lastMsgRow = Worksheets(MessageSheetName).Range("B" & Rows.Count).End(xlUp).row
+                                Worksheets(MessageSheetName).Cells(lastMsgRow + 1, 1).NumberFormat = "@"
+                                Worksheets(MessageSheetName).Cells(lastMsgRow + 1, 1).Value = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                                Worksheets(MessageSheetName).Cells(lastMsgRow + 1, 2).Value = errorMsg
+                                GoTo EndLoop
+                            Case "U"
                                 ir = i
                                 Exit For
-                            End If
-                        Case "U"
-                            ir = i
-                            Exit For
-                    End Select
+                        End Select
+                    End If
+                Else '"OUTBOUND USAGE"
+                    FormPremiseID = Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Premise_ID).Value
+                    If ShortProgramName = "ROSA" Then
+                        ROSAID = Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_ROSA).Value
+                        If ROSAID <> "" And HEAPID = "" Then existingID = ROSAID
+                    End If
+                    If ShortProgramName = "HEAP" Then
+                        HEAPID = Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_HEAP).Value
+                        If ROSAID = "" And HEAPID <> "" Then existingID = HEAPID
+                    End If
+                    
+                    If ReadPremiseID = FormPremiseID And existingID = EnrollmentID Then
+                        ir = i
+                        Exit For
+                    End If
                 End If
             Next i
                                 
@@ -133,25 +162,51 @@ Private Sub importfile()
                             ir = LastRow + 1
                             'If ShortProgramName = "HEAP" Then MsgBox "FYI, the HEAP enrollment ID " + CStr(EnrollmentID) + " doesn't exist."
                         Else
-                            MsgBox "The enrollment ID " + CStr(EnrollmentID) + " is not found. Please import the enrollment OUT file first."
-                            Exit Sub
+                            errflg = True
+                            RateCategoryText = x(LGEUsage.Rate_Category_Text)
+                            BillingDate = x(LGEUsage.Billing_Date)
+                            errorMsg = "The enrollment ID " + EnrollmentID + ", " + RateCategoryText + ", " + BillingDate + " are not found. Please import the enrollment OUT file first."
+                            'MsgBox errorMsg
+                            lastMsgRow = Worksheets(MessageSheetName).Range("B" & Rows.Count).End(xlUp).row
+                            Worksheets(MessageSheetName).Cells(lastMsgRow + 1, 1).NumberFormat = "@"
+                            Worksheets(MessageSheetName).Cells(lastMsgRow + 1, 1).Value = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                            Worksheets(MessageSheetName).Cells(lastMsgRow + 1, 2).Value = errorMsg
+                            GoTo EndLoop
                         End If
                     End If
                 Case "U"
                     If ir = 0 Then
-                        MsgBox "The enrollment ID " + CStr(EnrollmentID) + " is not found. Please check the Enrollment ID and the Transaction Type " + x(LGEEnrollments.Transaction_Type) + "."
-                        Exit Sub
+                        errflg = True
+                        errorMsg = "The enrollment ID " + EnrollmentID + " is not found. Please check the Enrollment ID and the Transaction Type " + x(LGEEnrollments.Transaction_Type) + "."
+                        'MsgBox errorMsg
+                        lastMsgRow = Worksheets(MessageSheetName).Range("B" & Rows.Count).End(xlUp).row
+                        Worksheets(MessageSheetName).Cells(lastMsgRow + 1, 1).NumberFormat = "@"
+                        Worksheets(MessageSheetName).Cells(lastMsgRow + 1, 1).Value = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+                        Worksheets(MessageSheetName).Cells(lastMsgRow + 1, 2).Value = errorMsg
+                        GoTo EndLoop
                     End If
             End Select
+            
         End If
-    
+        
         If OUTReportType = "OUTBOUND ENROLLMENT" Then Call parseenrollment(x, ir, ShortProgramName)
         If OUTReportType = "OUTBOUND USAGE" Then Call parseusage(x, ir, ShortProgramName)
+EndLoop:
     Next k
 
-    MsgBox "Import is completed."
-    frmImport.Hide
-    frmServiceCenter.Show vbModelless
+    If errflg Then
+        lastMsgRow = Worksheets(MessageSheetName).Range("B" & Rows.Count).End(xlUp).row
+        frmImportError.lstImportError.Clear
+        For i = errfirstrow + 1 To lastMsgRow
+            msg1 = Worksheets(MessageSheetName).Cells(i, 2).Value
+            frmImportError.lstImportError.AddItem (msg1)
+        Next i
+        frmImportError.Show vbModeless
+    Else
+        MsgBox "Import is completed."
+        frmImport.Hide
+        frmServiceCenter.Show vbModelless
+    End If
     
     Application.ScreenUpdating = True
     Application.EnableEvents = True
@@ -284,699 +339,699 @@ Private Sub parseusage(ByRef x() As String, ByVal ir As Integer, ByVal pn As Str
     
     il = InStr(1, ratecategory, "Gas")
     
+    If il = 0 Then 'Electric
+        Select Case Month
+            Case "01"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Service_Division) = x(LGEUsage.Service_Division)
+            Case "02"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Service_Division) = x(LGEUsage.Service_Division)
+            Case "03"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Service_Division) = x(LGEUsage.Service_Division)
+            Case "04"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Service_Division) = x(LGEUsage.Service_Division)
+            Case "05"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Service_Division) = x(LGEUsage.Service_Division)
+            Case "06"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Service_Division) = x(LGEUsage.Service_Division)
+            Case "07"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Service_Division) = x(LGEUsage.Service_Division)
+            Case "08"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Service_Division) = x(LGEUsage.Service_Division)
+            Case "09"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Service_Division) = x(LGEUsage.Service_Division)
+            Case "10"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Service_Division) = x(LGEUsage.Service_Division)
+            Case "11"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Service_Division) = x(LGEUsage.Service_Division)
+            Case "12"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Service_Division) = x(LGEUsage.Service_Division)
+        End Select
+    Else 'Gas
+        Select Case Month
+            Case "01"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Service_Division) = x(LGEUsage.Service_Division)
+            Case "02"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Service_Division) = x(LGEUsage.Service_Division)
+            Case "03"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Service_Division) = x(LGEUsage.Service_Division)
+            Case "04"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Service_Division) = x(LGEUsage.Service_Division)
+            Case "05"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Service_Division) = x(LGEUsage.Service_Division)
+            Case "06"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Service_Division) = x(LGEUsage.Service_Division)
+            Case "07"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Service_Division) = x(LGEUsage.Service_Division)
+            Case "08"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Service_Division) = x(LGEUsage.Service_Division)
+            Case "09"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Service_Division) = x(LGEUsage.Service_Division)
+            Case "10"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Service_Division) = x(LGEUsage.Service_Division)
+            Case "11"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Service_Division) = x(LGEUsage.Service_Division)
+            Case "12"
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Meter_Number) = x(LGEUsage.Meter_Number)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Billing_Date) = x(LGEUsage.Billing_Date)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Billed_Amount) = x(LGEUsage.Billed_Amount)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Average_Temperature) = x(LGEUsage.Average_Temperature)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
+                Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Service_Division) = x(LGEUsage.Service_Division)
+        End Select
     
+    End If
     
     If pn = "ROSA" Then
-        If il = 0 Then 'Electric
-            Select Case Month
-                Case "01"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Service_Division) = x(LGEUsage.Service_Division)
-                Case "02"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Service_Division) = x(LGEUsage.Service_Division)
-                Case "03"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Service_Division) = x(LGEUsage.Service_Division)
-                Case "04"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Service_Division) = x(LGEUsage.Service_Division)
-                Case "05"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Service_Division) = x(LGEUsage.Service_Division)
-                Case "06"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Service_Division) = x(LGEUsage.Service_Division)
-                Case "07"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Service_Division) = x(LGEUsage.Service_Division)
-                Case "08"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Service_Division) = x(LGEUsage.Service_Division)
-                Case "09"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Service_Division) = x(LGEUsage.Service_Division)
-                Case "10"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Service_Division) = x(LGEUsage.Service_Division)
-                Case "11"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Service_Division) = x(LGEUsage.Service_Division)
-                Case "12"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_PF_On_Peak_Electric) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Power_Factor_on_adjustment_Electric) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_KW_Billed_on_Demand_Electric) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Service_Division) = x(LGEUsage.Service_Division)
-            End Select
-        Else 'Gas
-            Select Case Month
-                Case "01"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Service_Division) = x(LGEUsage.Service_Division)
-                Case "02"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Service_Division) = x(LGEUsage.Service_Division)
-                Case "03"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Service_Division) = x(LGEUsage.Service_Division)
-                Case "04"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Service_Division) = x(LGEUsage.Service_Division)
-                Case "05"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Service_Division) = x(LGEUsage.Service_Division)
-                Case "06"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Service_Division) = x(LGEUsage.Service_Division)
-                Case "07"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Service_Division) = x(LGEUsage.Service_Division)
-                Case "08"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Service_Division) = x(LGEUsage.Service_Division)
-                Case "09"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Service_Division) = x(LGEUsage.Service_Division)
-                Case "10"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Service_Division) = x(LGEUsage.Service_Division)
-                Case "11"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Service_Division) = x(LGEUsage.Service_Division)
-                Case "12"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Meter_Number) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Rate_Category_Text) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Billing_Date) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Billed_Amount) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Taxes_and_Fees) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Energy_Consumption) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Average_Temperature) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Heating_degree_days) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Cooling_degree_days) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_No_of_billing_days) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Service_Division) = x(LGEUsage.Service_Division)
-            End Select
         
-        End If
         Worksheets(PMSheetName).Cells(PMROSAUsageRow, InboundLastReadCol).NumberFormat = "@"
         Worksheets(PMSheetName).Cells(PMROSAUsageRow, InboundLastReadCol) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
     Else
-        If il = 0 Then 'Electric HEAP
-            Select Case Month
-                Case "01"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                Case "02"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "03"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "04"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "05"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "06"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "07"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "08"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "09"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "10"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "11"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "12"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-            
-            End Select
-        Else 'Gas HEAP
-            Select Case Month
-                Case "01"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "02"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "03"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "04"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "05"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "06"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "07"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "08"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "09"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "10"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "11"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-                
-                Case "12"
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
-                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Service_Division_HEAP) = x(LGEUsage.Service_Division)
-            
-            End Select
-        
-        End If
+'        If il = 0 Then 'Electric HEAP
+'            Select Case Month
+'                Case "01"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jan_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'                Case "02"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Feb_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "03"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Mar_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "04"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Apr_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "05"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_May_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "06"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jun_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "07"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Jul_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "08"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Aug_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "09"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Sep_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "10"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Oct_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "11"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Nov_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "12"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_PF_On_Peak_Electric_HEAP) = x(LGEUsage.PF_On_Peak_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Power_Factor_on_adjustment_Electric_HEAP) = x(LGEUsage.Power_Factor_on_adjustment_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_KW_Billed_on_Demand_Electric_HEAP) = x(LGEUsage.KW_Billed_on_Demand_Electric)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Electricity_Dec_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'            End Select
+'        Else 'Gas HEAP
+'            Select Case Month
+'                Case "01"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jan_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "02"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Feb_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "03"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Mar_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "04"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Apr_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "05"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_May_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "06"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jun_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "07"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Jul_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "08"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Aug_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "09"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Sep_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "10"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Oct_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "11"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Nov_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'                Case "12"
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Meter_Number_HEAP) = x(LGEUsage.Meter_Number)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Rate_Category_Text_HEAP) = x(LGEUsage.Rate_Category_Text)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Billing_Date_HEAP) = x(LGEUsage.Billing_Date)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Billed_Amount_HEAP) = x(LGEUsage.Billed_Amount)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Taxes_and_Fees_HEAP) = x(LGEUsage.Taxes_and_Fees)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Energy_Consumption_HEAP) = x(LGEUsage.Energy_Consumption)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Average_Temperature_HEAP) = x(LGEUsage.Average_Temperature)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Heating_degree_days_HEAP) = x(LGEUsage.Heating_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Cooling_degree_days_HEAP) = x(LGEUsage.Cooling_degree_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_No_of_billing_days_HEAP) = x(LGEUsage.No_of_billing_days)
+'                    Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Usage_Gas_Dec_Service_Division_HEAP) = x(LGEUsage.Service_Division)
+'
+'            End Select
+'
+'        End If
     
         Worksheets(PMSheetName).Cells(PMHEAPUsageRow, InboundLastReadCol).NumberFormat = "@"
         Worksheets(PMSheetName).Cells(PMHEAPUsageRow, InboundLastReadCol) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
