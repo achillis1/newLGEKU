@@ -156,7 +156,7 @@ Private Sub UserForm_Activate()
     lastROSA = Worksheets(ImportSheetName).Range("B" & Rows.Count).End(xlUp).row
     lastHEAP = Worksheets(ImportSheetName).Range("C" & Rows.Count).End(xlUp).row
     LastRow = WorksheetFunction.Max(lastROSA, lastHEAP)
-    
+    lstEnrollments.Clear
     For i = EnrollmentFirstDataLine To LastRow
         ROSAID = Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_ROSA).Value
         HEAPID = Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_HEAP).Value
