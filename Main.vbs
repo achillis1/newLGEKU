@@ -3,9 +3,9 @@ Public EnrollmentFirstDataLine As Integer
 Public ImportSheetName As String
 Public PMSheetName As String
 Public MessageSheetName As String
+Public ImportHistorySN As String
 Public InboundLastReadCol As Integer
 Public currentEnrollment As String
-
 
 '''' Added by Ding '''
 Public anum() As Integer

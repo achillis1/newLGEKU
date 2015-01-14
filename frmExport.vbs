@@ -15,6 +15,8 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
+
+
 Private Sub cmdCancel_Click()
     Me.Hide
     frmServiceCenter.Show vbModeless
@@ -338,7 +340,7 @@ For k = 2 To nCont
     If wsCont.Cells(k, NexantContacts.Enrollment_ID_ROSA).Value <> "" Then
         If wsCont.Cells(k, NexantContacts.ROSA_Contact_Date_Interface).Value = "" Then
             Set Enroll_ID = wsDb.Range("B:B").Find(What:=wsCont.Cells(k, NexantContacts.Enrollment_ID_ROSA).Value, _
-                After:=Range("B11"), LookIn:=xlValues, LookAt:=xlWhole, SearchOrder:=xlByRows, _
+                After:=wsDb.Range("B11"), LookIn:=xlValues, LookAt:=xlWhole, SearchOrder:=xlByRows, _
                 SearchDirection:=xlNext, MatchCase:=False, SearchFormat:=False)
             If Enroll_ID Is Nothing Then
                 wsCont.Cells(k, NexantContacts.ROSA_Contact_Date_Interface).Value = "ROSA ID not found"
@@ -363,7 +365,7 @@ For k = 2 To nCont
     If wsCont.Cells(k, NexantContacts.Enrollment_ID_HEAP).Value <> "" Then
         If wsCont.Cells(k, NexantContacts.HEAP_Contact_Date_Interface).Value = "" Then
             Set Enroll_ID = wsDb.Range("C:C").Find(What:=wsCont.Cells(k, NexantContacts.Enrollment_ID_HEAP).Value, _
-                After:=ActiveCell, LookIn:=xlValues, LookAt:=xlWhole, SearchOrder:=xlByRows, _
+                After:=wsDb.Range("C11"), LookIn:=xlValues, LookAt:=xlWhole, SearchOrder:=xlByRows, _
                 SearchDirection:=xlNext, MatchCase:=False, SearchFormat:=False)
             If Enroll_ID Is Nothing Then
                 wsCont.Cells(k, NexantContacts.HEAP_Contact_Date_Interface).Value = "HEAP ID not found"
@@ -400,18 +402,75 @@ wsROSA.Cells(jr, 2).Value = jr - 2
 wsHEAP.Cells(jh, 1).Value = 3
 wsHEAP.Cells(jh, 2).Value = jh - 2
 
-wsROSA.SaveAs ActiveWorkbook.Path + "\Export Files\DSM_ROSA_status_in.txt", xlTXT
+tnow = NexantLGEDateTimeNow
+
+Dim m As Integer
+Open ActiveWorkbook.Path + "/fromNexant/dsm_rosa_status_in.txt" For Output As #1
+'header
+Print #1, writeline(wsROSA, 1, 1, 3)
+'data
+For m = 2 To jr - 1
+    Print #1, writeline(wsROSA, m, 1, 54)
+Next m
+'footer
+Print #1, writeline(wsROSA, jr, 1, 2)
+Close #1
 wbROSA.Close
-wsHEAP.SaveAs ActiveWorkbook.Path + "\Export Files\DSM_HEAP_status_in.txt", xlTXT
+FileCopy ActiveWorkbook.Path + "/fromNexant/dsm_rosa_status_in.txt", _
+         ActiveWorkbook.Path + "/fromNexantArchive/status_in/dsm_rosa_status_in_" + tnow + ".txt"
+
+Open ActiveWorkbook.Path + "/fromNexant/dsm_heap_status_in.txt" For Output As #1
+'header
+Print #1, writeline(wsHEAP, 1, 1, 3)
+'data
+For m = 2 To jh - 1
+    Print #1, writeline(wsHEAP, m, 1, 54)
+Next m
+'footer
+Print #1, writeline(wsHEAP, jh, 1, 2)
+Close #1
 wbHEAP.Close
+FileCopy ActiveWorkbook.Path + "/fromNexant/dsm_heap_status_in.txt", _
+         ActiveWorkbook.Path + "/fromNexantArchive/status_in/dsm_heap_status_in_" + tnow + ".txt"
+
 objExcel.Quit
+
+wspm.Cells(PMINRows.PMROSAStatus, 2).Value = tnow
+wspm.Cells(PMINRows.PMHEAPStatus, 2).Value = tnow
+Me.Last_Run_Date_Status.Value = tnow
 
 Application.ScreenUpdating = True
 Application.DisplayAlerts = True
 
+MsgBox "The status_in files were successfully created at " & tnow & "," & Chr(10) & "with " & jr - 2 & " ROSAs and " & jh - 2 & " HEAPs."
+
 End Sub
 
+' ir is the row number, ii is the start column number, jj is the end column number
+Function writeline(wsSour, ByVal ir As Integer, ByVal ii As Integer, ByVal jj As Integer)
+    writeline = ""
+    
+    For j = ii To jj
+        Select Case j
+            Case ii
+                writeline = CStr(wsSour.Cells(ir, j).Value)
+            Case jj
+                writeline = writeline + "," + CStr(wsSour.Cells(ir, j).Value)
+            Case Else
+                writeline = writeline + "," + CStr(wsSour.Cells(ir, j).Value)
+        End Select
+    Next j
+End Function
+
 Private Sub UserForm_Activate()
+    Set wspm = Worksheets("PM")
+    'setting single box to value for ROSA since both ROSA/HEAP are exported at same time by same macro
+    Me.Last_Run_Date_Status.Value = wspm.Cells(PMINRows.PMROSAStatus, 2).Value
+    Me.Last_Run_Date_Results.Value = wspm.Cells(PMINRows.PMROSAResults, 2).Value
+    Me.Last_Run_Date_Context.Value = wspm.Cells(PMINRows.PMROSAContextdata, 2).Value
+    Me.Last_Run_Date_PDF_Control.Value = wspm.Cells(PMINRows.PMROSAPDFControl, 2).Value
+    Me.Last_Run_Date_Recon.Value = wspm.Cells(PMINRows.PMROSARecon, 2).Value
+    Me.Last_Run_Date_Invoice.Value = wspm.Cells(PMINRows.PMROSAInvoice, 2).Value
     Me.Last_Run_Date_Status.BackColor = rgbLightGrey
     Me.Last_Run_Date_Results.BackColor = rgbLightGrey
     Me.Last_Run_Date_Context.BackColor = rgbLightGrey

@@ -13,6 +13,11 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
+Private Sub MultiPage1_Change()
+
+End Sub
+
 Private Sub UserForm_Activate()
 
 Set wsDb = Worksheets("Enrollments")
@@ -33,22 +38,7 @@ For x = 11 To wsDblr
         Me.Enrollment_ID_ROSA = wsDb.Cells(x, NexantEnrollments.Enrollment_ID_ROSA)
         'ROSA Scheduling
         Me.Customer_contact_mode_ROSA = wsDb.Cells(x, NexantEnrollments.Customer_contact_mode_ROSA)
-        Me.Fifth_Contact_Attempt_Date_ROSA = wsDb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Date_ROSA)
-        Me.Fifth_Contact_Attempt_Notes_ROSA = wsDb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Notes_ROSA)
-        Me.Fifth_Contact_Attempt_Type_ROSA = wsDb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Type_ROSA)
-        Me.First_Contact_Attempt_Date_ROSA = wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Date_ROSA)
-        Me.First_Contact_Attempt_Notes_ROSA = wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Notes_ROSA)
-        Me.First_Contact_Attempt_Type_ROSA = wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Type_ROSA)
         Me.Follow_up_Date_ROSA = wsDb.Cells(x, NexantEnrollments.Follow_up_Date_ROSA)
-        Me.Fourth_Contact_Attempt_Date_ROSA = wsDb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Date_ROSA)
-        Me.Fourth_Contact_Attempt_Notes_ROSA = wsDb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Notes_ROSA)
-        Me.Fourth_Contact_Attempt_Type_ROSA = wsDb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Type_ROSA)
-        Me.Second_Contact_Attempt_Date_ROSA = wsDb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Date_ROSA)
-        Me.Second_Contact_Attempt_Notes_ROSA = wsDb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Notes_ROSA)
-        Me.Second_Contact_Attempt_Type_ROSA = wsDb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Type_ROSA)
-        Me.Third_Contact_Attempt_Date_ROSA = wsDb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Date_ROSA)
-        Me.Third_Contact_Attempt_Notes_ROSA = wsDb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Notes_ROSA)
-        Me.Third_Contact_Attempt_Type_ROSA = wsDb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Type_ROSA)
         'ROSA Status
         Me.CANCELLED_date_interfaced_ROSA = wsDb.Cells(x, NexantEnrollments.CANCELLED_date_interfaced_ROSA)
         Me.CANCELLED_date_set_ROSA = wsDb.Cells(x, NexantEnrollments.CANCELLED_date_set_ROSA)
@@ -58,16 +48,6 @@ For x = 11 To wsDblr
         Me.FIRST_CONTACT_date_set_ROSA = wsDb.Cells(x, NexantEnrollments.FIRST_CONTACT_date_set_ROSA)
         Me.ON_HOLD_date_interfaced_ROSA = wsDb.Cells(x, NexantEnrollments.ON_HOLD_date_interfaced_ROSA)
         Me.ON_HOLD_date_set_ROSA = wsDb.Cells(x, NexantEnrollments.ON_HOLD_date_set_ROSA)
-        Me.PENDING_1_date_interfaced_ROSA = wsDb.Cells(x, NexantEnrollments.PENDING_1_date_interfaced_ROSA)
-        Me.PENDING_1_date_set_ROSA = wsDb.Cells(x, NexantEnrollments.PENDING_1_date_set_ROSA)
-        Me.PENDING_2_date_interfaced_ROSA = wsDb.Cells(x, NexantEnrollments.PENDING_2_date_interfaced_ROSA)
-        Me.PENDING_2_date_set_ROSA = wsDb.Cells(x, NexantEnrollments.PENDING_2_date_set_ROSA)
-        Me.PENDING_3_date_interfaced_ROSA = wsDb.Cells(x, NexantEnrollments.PENDING_3_date_interfaced_ROSA)
-        Me.PENDING_3_date_set_ROSA = wsDb.Cells(x, NexantEnrollments.PENDING_3_date_set_ROSA)
-        Me.PENDING_4_date_interfaced_ROSA = wsDb.Cells(x, NexantEnrollments.PENDING_4_date_interfaced_ROSA)
-        Me.PENDING_4_date_set_ROSA = wsDb.Cells(x, NexantEnrollments.PENDING_4_date_set_ROSA)
-        Me.PENDING_5_date_interfaced_ROSA = wsDb.Cells(x, NexantEnrollments.PENDING_5_date_interfaced_ROSA)
-        Me.PENDING_5_date_set_ROSA = wsDb.Cells(x, NexantEnrollments.PENDING_5_date_set_ROSA)
         Me.RECEIVED_AT_VENDOR_date_interfaced_ROSA = wsDb.Cells(x, NexantEnrollments.RECEIVED_AT_VENDOR_date_interfaced_ROSA)
         Me.RECEIVED_AT_VENDOR_date_set_ROSA = wsDb.Cells(x, NexantEnrollments.RECEIVED_AT_VENDOR_date_set_ROSA)
         Me.SCHEDULED_date_interfaced_ROSA = wsDb.Cells(x, NexantEnrollments.SCHEDULED_date_interfaced_ROSA)
@@ -98,7 +78,7 @@ For x = 11 To wsDblr
         Me.Schedule_Time_ROSA = wsDb.Cells(x, NexantEnrollments.Schedule_Time_ROSA)
         Me.Total_conditioned_square_footage_ROSA = wsDb.Cells(x, NexantEnrollments.Total_conditioned_square_footage_ROSA)
         Me.WO_Number_ROSA = wsDb.Cells(x, NexantEnrollments.WO_Number_ROSA)
-        
+        Me.Site_Visit_File_ROSA = wsDb.Cells(x, NexantEnrollments.Site_Visit_File_ROSA)
         Exit Sub
         
     Else
@@ -149,22 +129,7 @@ For x = 11 To wsDblr
         'push data from form to Database
         'ROSA Scheduling
         wsDb.Cells(x, NexantEnrollments.Customer_contact_mode_ROSA) = Me.Customer_contact_mode_ROSA
-        wsDb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Date_ROSA) = Me.Fifth_Contact_Attempt_Date_ROSA
-        wsDb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Notes_ROSA) = Me.Fifth_Contact_Attempt_Notes_ROSA
-        wsDb.Cells(x, NexantEnrollments.Fifth_Contact_Attempt_Type_ROSA) = Me.Fifth_Contact_Attempt_Type_ROSA
-        wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Date_ROSA) = Me.First_Contact_Attempt_Date_ROSA
-        wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Notes_ROSA) = Me.First_Contact_Attempt_Notes_ROSA
-        wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Type_ROSA) = Me.First_Contact_Attempt_Type_ROSA
         wsDb.Cells(x, NexantEnrollments.Follow_up_Date_ROSA) = Me.Follow_up_Date_ROSA
-        wsDb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Date_ROSA) = Me.Fourth_Contact_Attempt_Date_ROSA
-        wsDb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Notes_ROSA) = Me.Fourth_Contact_Attempt_Notes_ROSA
-        wsDb.Cells(x, NexantEnrollments.Fourth_Contact_Attempt_Type_ROSA) = Me.Fourth_Contact_Attempt_Type_ROSA
-        wsDb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Date_ROSA) = Me.Second_Contact_Attempt_Date_ROSA
-        wsDb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Notes_ROSA) = Me.Second_Contact_Attempt_Notes_ROSA
-        wsDb.Cells(x, NexantEnrollments.Second_Contact_Attempt_Type_ROSA) = Me.Second_Contact_Attempt_Type_ROSA
-        wsDb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Date_ROSA) = Me.Third_Contact_Attempt_Date_ROSA
-        wsDb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Notes_ROSA) = Me.Third_Contact_Attempt_Notes_ROSA
-        wsDb.Cells(x, NexantEnrollments.Third_Contact_Attempt_Type_ROSA) = Me.Third_Contact_Attempt_Type_ROSA
         'ROSA Status
         wsDb.Cells(x, NexantEnrollments.CANCELLED_date_interfaced_ROSA) = Me.CANCELLED_date_interfaced_ROSA
         wsDb.Cells(x, NexantEnrollments.CANCELLED_date_set_ROSA) = Me.CANCELLED_date_set_ROSA
@@ -174,16 +139,6 @@ For x = 11 To wsDblr
         wsDb.Cells(x, NexantEnrollments.FIRST_CONTACT_date_set_ROSA) = Me.FIRST_CONTACT_date_set_ROSA
         wsDb.Cells(x, NexantEnrollments.ON_HOLD_date_interfaced_ROSA) = Me.ON_HOLD_date_interfaced_ROSA
         wsDb.Cells(x, NexantEnrollments.ON_HOLD_date_set_ROSA) = Me.ON_HOLD_date_set_ROSA
-        wsDb.Cells(x, NexantEnrollments.PENDING_1_date_interfaced_ROSA) = Me.PENDING_1_date_interfaced_ROSA
-        wsDb.Cells(x, NexantEnrollments.PENDING_1_date_set_ROSA) = Me.PENDING_1_date_set_ROSA
-        wsDb.Cells(x, NexantEnrollments.PENDING_2_date_interfaced_ROSA) = Me.PENDING_2_date_interfaced_ROSA
-        wsDb.Cells(x, NexantEnrollments.PENDING_2_date_set_ROSA) = Me.PENDING_2_date_set_ROSA
-        wsDb.Cells(x, NexantEnrollments.PENDING_3_date_interfaced_ROSA) = Me.PENDING_3_date_interfaced_ROSA
-        wsDb.Cells(x, NexantEnrollments.PENDING_3_date_set_ROSA) = Me.PENDING_3_date_set_ROSA
-        wsDb.Cells(x, NexantEnrollments.PENDING_4_date_interfaced_ROSA) = Me.PENDING_4_date_interfaced_ROSA
-        wsDb.Cells(x, NexantEnrollments.PENDING_4_date_set_ROSA) = Me.PENDING_4_date_set_ROSA
-        wsDb.Cells(x, NexantEnrollments.PENDING_5_date_interfaced_ROSA) = Me.PENDING_5_date_interfaced_ROSA
-        wsDb.Cells(x, NexantEnrollments.PENDING_5_date_set_ROSA) = Me.PENDING_5_date_set_ROSA
         wsDb.Cells(x, NexantEnrollments.RECEIVED_AT_VENDOR_date_interfaced_ROSA) = Me.RECEIVED_AT_VENDOR_date_interfaced_ROSA
         wsDb.Cells(x, NexantEnrollments.RECEIVED_AT_VENDOR_date_set_ROSA) = Me.RECEIVED_AT_VENDOR_date_set_ROSA
         wsDb.Cells(x, NexantEnrollments.SCHEDULED_date_interfaced_ROSA) = Me.SCHEDULED_date_interfaced_ROSA
@@ -217,7 +172,7 @@ For x = 11 To wsDblr
 'Time stamp on Last updated
         wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment).NumberFormat = "@"
         wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment) = Format(LocalTimeToET(Now()), "YYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-        
+        wsDb.Cells(x, NexantEnrollments.Site_Visit_File_ROSA) = Me.Site_Visit_File_ROSA
         Exit Sub
         
     Else

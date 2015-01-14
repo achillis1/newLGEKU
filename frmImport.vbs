@@ -23,6 +23,7 @@ Private Sub cmdImportFourFiles_Click()
     Call importfourfiles
 End Sub
 
+
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
     If CloseMode = 0 Then
         Cancel = True
@@ -31,7 +32,7 @@ Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
 End Sub
 
 Private Sub cmdImport_Click()
-    Call importfile
+    Call importfile("")
 End Sub
 
 Private Sub importfourfiles()
@@ -61,13 +62,33 @@ Private Sub importfourfiles()
     For i = 1 To 4
         pos = InStrRev(FilesToOpen(i), "\")
         filename(i) = Right(FilesToOpen(i), Len(FilesToOpen(i)) - pos)
+        pos = InStr(filename(i), "_OUT_")
+        filename(i) = Mid(filename(i), 1, pos + 3)
         fullname(i) = CStr(FilesToOpen(i))
     Next i
     
-    Call findfile(filename, fullname, "DSM_ROSA_ENROLL_OUT.TXT")
-    Call findfile(filename, fullname, "DSM_ROSA_USAGE_OUT.TXT")
-    Call findfile(filename, fullname, "DSM_HEAP_ENROLL_OUT.TXT")
-    Call findfile(filename, fullname, "DSM_HEAP_ENROLL_OUT.TXT")
+    Dim flg As Boolean
+    flg = False
+    For i = 1 To 4
+        If filename(i) = "DSM_ROSA_ENROLL_OUT" Or _
+            filename(i) = "DSM_ROSA_USAGE_OUT" Or _
+            filename(i) = "DSM_HEAP_ENROLL_OUT" Or _
+            filename(i) = "DSM_HEAP_USAGE_OUT" Then
+        
+        Else
+            flg = True
+        End If
+    Next i
+    
+    If flg Then
+        MsgBox "The file names are not in the correct format. Please contact the developer. thanks!"
+        Exit Sub
+    End If
+    
+    Call findfile(filename, fullname, "DSM_ROSA_ENROLL_OUT")
+    Call findfile(filename, fullname, "DSM_ROSA_USAGE_OUT")
+    Call findfile(filename, fullname, "DSM_HEAP_ENROLL_OUT")
+    Call findfile(filename, fullname, "DSM_HEAP_USAGE_OUT")
     
 ExitHandler:
     Application.ScreenUpdating = True
@@ -84,6 +105,28 @@ Private Sub findfile(ByRef file() As String, ByRef fileopen() As String, ByVal s
         End If
     Next i
 End Sub
+
+Private Function beforeimport(ByVal filetoopen As String) As Boolean 'return true if already imported
+
+    pos = InStrRev(filetoopen, "\")
+    filetoopen = Right(filetoopen, Len(filetoopen) - pos)
+
+    lastImportRow = Worksheets(ImportHistorySN).Range("A" & Rows.Count).End(xlUp).row
+    For i = 2 To lastImportRow
+        fn = Worksheets(ImportHistorySN).Cells(i, ImportHistory.FullFilename).Value
+        posimp = InStr(1, fn, "_imp")
+
+        If fn <> 0 Then fn = Mid(fn, 1, posimp - 1) + ".txt"
+        If fn = filetoopen Then
+            importdate = Worksheets(ImportHistorySN).Cells(i, ImportHistory.Imported_Date).Value
+            importtime = Worksheets(ImportHistorySN).Cells(i, ImportHistory.Imported_Time).Value
+            MsgBox "The " + filetoopen + " was imported at " + CStr(importtime) + " on " + CStr(importdate)
+            beforeimport = True
+            Exit For
+        End If
+    Next i
+
+End Function
 Private Sub importfile(ByVal filetoopen As String)
     Application.ScreenUpdating = False
     Application.EnableEvents = False
@@ -92,15 +135,29 @@ Private Sub importfile(ByVal filetoopen As String)
     Dim DataLine As String
     Dim str() As String
     Dim LineNum As Integer
+    Dim filetoopen1 As Variant
     
     FileNum = FreeFile()
-    'filetoopen = Application.GetOpenFilename("Text Files (*.txt), *.txt")
-'    If filetoopen = False Then
-'        Exit Sub
-'    End If
+    If filetoopen = "" Then
+        filetoopen1 = Application.GetOpenFilename("Text Files (*.txt), *.txt")
+        If filetoopen1 = False Then
+            Exit Sub
+        End If
+    End If
     
     LineNum = 0
-    Open filetoopen For Input As #FileNum
+    If filetoopen = "" Then
+        Open filetoopen1 For Input As #FileNum
+    Else
+        Open filetoopen For Input As #FileNum
+    End If
+    
+    If filetoopen = "" Then filetoopen = CStr(filetoopen1)
+    If beforeimport(filetoopen) Then
+        Close #FileNum
+        Exit Sub
+    End If
+    
     While Not EOF(FileNum)
         LineNum = LineNum + 1
         Line Input #FileNum, DataLine
@@ -283,6 +340,8 @@ Private Sub importfile(ByVal filetoopen As String)
         
         If OUTReportType = "OUTBOUND ENROLLMENT" Then Call parseenrollment(x, ir, ShortProgramName)
         If OUTReportType = "OUTBOUND USAGE" Then Call parseusage(x, ir, ShortProgramName)
+        
+
 EndLoop:
     Next k
 
@@ -295,6 +354,8 @@ EndLoop:
         Next i
         frmImportError.Show vbModeless
     Else
+        Call writeimportdate(filetoopen)
+        
         MsgBox "Import " + ShortProgramName + ", " + OUTReportType + " is completed."
         frmImport.Hide
         frmServiceCenter.Show vbModelless
@@ -302,6 +363,52 @@ EndLoop:
     
     Application.ScreenUpdating = True
     Application.EnableEvents = True
+End Sub
+Private Sub movefile(ByVal filetoopen As String, ByVal impdate As String, ByVal imptime As String)
+    pos = InStrRev(filetoopen, "\")
+    FromPath = Mid(filetoopen, 1, pos - 1)
+    importfilename = Mid(filetoopen, pos + 1, Len(filetoopen) - pos)
+    pos = InStrRev(FromPath, "\")
+    ParentPath = Mid(FromPath, 1, pos - 1)
+    ToPath = ParentPath + "\toNexantArchive\"
+    FromPath = FromPath + "\"
+    
+    Dim FSO As Object
+    Dim FileExt As String
+    Set FSO = CreateObject("scripting.filesystemobject")
+    SourceFileExt = importfilename
+    FileExt = Left(importfilename, Len(importfilename) - 4) + "_imp" + impdate + "-" + imptime + ".txt"
+    FSO.movefile Source:=FromPath & SourceFileExt, Destination:=ToPath & FileExt
+End Sub
+
+Private Sub writeimportdate(ByVal filetoopen As String)
+    
+    pos = InStrRev(filetoopen, "\")
+    filetoopen1 = Right(filetoopen, Len(filetoopen) - pos)
+    
+    posret = InStr(1, filetoopen1, "_ret")
+    retdate = Mid(filetoopen1, posret + 4, 8)
+    rettime = Mid(filetoopen1, posret + 13, 6)
+    
+    posmod = InStr(1, filetoopen1, "_mod")
+    moddate = Mid(filetoopen1, posmod + 4, 8)
+    modtime = Mid(filetoopen1, posmod + 13, 6)
+    
+    postxt = InStr(1, filetoopen1, ".txt")
+    filetoopen1 = Mid(filetoopen1, 1, postxt - 1)
+    lastImportRow = Worksheets(ImportHistorySN).Range("A" & Rows.Count).End(xlUp).row
+    impdate = Format(LocalTimeToET(Now()), "YYYYMMDD")
+    imptime = Format(LocalTimeToET(Now()), "HHMMSS")
+
+    Worksheets(ImportHistorySN).Cells(lastImportRow + 1, ImportHistory.Retrieved_Date).Value = retdate
+    Worksheets(ImportHistorySN).Cells(lastImportRow + 1, ImportHistory.Retrieved_Time).Value = rettime
+    Worksheets(ImportHistorySN).Cells(lastImportRow + 1, ImportHistory.Modified_Date).Value = moddate
+    Worksheets(ImportHistorySN).Cells(lastImportRow + 1, ImportHistory.Modified_Time).Value = modtime
+    Worksheets(ImportHistorySN).Cells(lastImportRow + 1, ImportHistory.Imported_Date).Value = impdate
+    Worksheets(ImportHistorySN).Cells(lastImportRow + 1, ImportHistory.Imported_Time).Value = imptime
+    Worksheets(ImportHistorySN).Cells(lastImportRow + 1, ImportHistory.FullFilename).Value = filetoopen1 + "_imp" + impdate + "-" + imptime + ".txt"
+    
+    Call movefile(filetoopen, impdate, imptime)
 End Sub
 
 Private Sub writeerror(ByVal errorMsg As String)

@@ -13,6 +13,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
 Public LastRow As Integer
 
 Private Sub cmdCancel_Click()
@@ -37,6 +38,11 @@ Me.Hide
 List_Contact_Attempts_HEAP.Show vbModeless
 End Sub
 
+Private Sub cmdHEAPinfo_Click()
+Me.Hide
+HEAP_Scheduling_Status_Info.Show
+End Sub
+
 Private Sub cmdInfo_Click()
 Me.Hide
 Information_Form.Show vbModeless
@@ -44,8 +50,8 @@ End Sub
 
 Private Sub cmdReset_Click()
     txtEnrollment.Text = ""
-    'cmdROSA.Enabled = False
-    'cmdHeap.Enabled = False
+    cmdROSAinfo.Enabled = False
+    cmdHEAPinfo.Enabled = False
     cmdInfo.Enabled = False
     cmdMeasure.Enabled = False
     cmdUsage.Enabled = False
@@ -79,6 +85,11 @@ Me.Hide
 List_Contact_Attempts_ROSA.Show vbModeless
 End Sub
 
+Private Sub cmdROSAinfo_Click()
+Me.Hide
+ROSA_Scheduling_Status_Info.Show
+End Sub
+
 Private Sub cmdSearch_Click()
     Dim ROSAID As Long
     Dim HEAPID As Long
@@ -101,13 +112,13 @@ Private Sub cmdSearch_Click()
                 lstEnrollments.Clear
                 If EnrollmentID = ROSAID Then
                     lstEnrollments.AddItem (Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_ROSA).Value + "-ROSA")
-                    'cmdROSA.Enabled = True
-                    'cmdHeap.Enabled = False
+                    cmdROSAinfo.Enabled = True
+                    cmdHEAPinfo.Enabled = False
                 End If
                 If EnrollmentID = HEAPID Then
                     lstEnrollments.AddItem (Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_HEAP).Value + "-HEAP")
-                    'cmdHeap.Enabled = True
-                    'cmdROSA.Enabled = False
+                    cmdHEAPinfo.Enabled = True
+                    cmdROSAinfo.Enabled = False
                 End If
                 cmdInfo.Enabled = True
                 cmdMeasure.Enabled = True
@@ -133,17 +144,17 @@ Private Sub lstEnrollments_Click()
         cmdMeasure.Enabled = True
         cmdContextual.Enabled = True
         cmdInfo.Enabled = True
-'        Select Case rh
-'            Case "ROSA"
-'                cmdHeap.Enabled = False
-'                cmdROSA.Enabled = True
-'
-'            Case "HEAP"
-'                cmdROSA.Enabled = False
-'                cmdHeap.Enabled = True
-'
-'            Case Else
-'        End Select
+        Select Case rh
+            Case "ROSA"
+                cmdHEAPinfo.Enabled = False
+                cmdROSAinfo.Enabled = True
+
+            Case "HEAP"
+                cmdROSAinfo.Enabled = False
+                cmdHEAPinfo.Enabled = True
+
+            Case Else
+        End Select
     End If
 
     
@@ -166,8 +177,8 @@ Private Sub UserForm_Activate()
     Next i
     
     cmdInfo.Enabled = False
-    'cmdROSA.Enabled = False
-    'cmdHeap.Enabled = False
+    cmdROSAinfo.Enabled = False
+    cmdHEAPinfo.Enabled = False
     cmdMeasure.Enabled = False
     cmdUsage.Enabled = False
     cmdContextual.Enabled = False

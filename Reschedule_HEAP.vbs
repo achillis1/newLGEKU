@@ -1,14 +1,14 @@
 VERSION 5.00
-Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} List_Contact_Attempts_HEAP 
-   Caption         =   "List_Contact_Attempts_HEAP"
+Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} Reschedule_HEAP 
+   Caption         =   "Reschedule_HEAP"
    ClientHeight    =   7005
    ClientLeft      =   45
    ClientTop       =   375
    ClientWidth     =   15240
-   OleObjectBlob   =   "List_Contact_Attempts_HEAP.frx":0000
+   OleObjectBlob   =   "Reschedule_HEAP.frx":0000
    StartUpPosition =   1  'CenterOwner
 End
-Attribute VB_Name = "List_Contact_Attempts_HEAP"
+Attribute VB_Name = "Reschedule_HEAP"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
@@ -314,6 +314,10 @@ For x = 11 To wsDblr
             wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
             wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
             wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "HHMMSS")
+            wsDb.Cells(x, NexantEnrollments.Schedule_Date_HEAP) = Me.Schedule_Date_HEAP
+            wsDb.Cells(x, NexantEnrollments.Schedule_Time_HEAP) = Me.Schedule_Time_HEAP
+            wsDb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP) = ""
+            
          Else
             wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "SCHEDULED"
             wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
@@ -364,7 +368,7 @@ Private Sub UserForm_Activate()
     
     'find row in Database for Enrollment ID
     For x = 11 To wsDblr
-        If wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "RECEIVED AT VENDOR" Or _
+        If wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "SCHEDULED" Then  'Or _
         wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "FIRST CONTACT" Or _
         wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "PENDING" Then
             'push data from database to form
@@ -391,4 +395,6 @@ Private Sub UserForm_Activate()
     End With
 
 End Sub
+
+
 
