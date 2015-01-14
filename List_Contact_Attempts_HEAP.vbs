@@ -1,10 +1,10 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} List_Contact_Attempts_HEAP 
    Caption         =   "List_Contact_Attempts_HEAP"
-   ClientHeight    =   6930
+   ClientHeight    =   7005
    ClientLeft      =   45
    ClientTop       =   375
-   ClientWidth     =   15285
+   ClientWidth     =   15240
    OleObjectBlob   =   "List_Contact_Attempts_HEAP.frx":0000
    StartUpPosition =   1  'CenterOwner
 End
@@ -13,6 +13,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
+
 
 
 Private Sub Cancel_Enrollment_HEAP_Click()
@@ -38,12 +40,14 @@ If MsgBox("Cancelation Requires Management Approval, Has Approval Been Granted?"
 
     For x = 11 To wsDblr
         If wsDb.Cells(x, NexantEnrollments.Enrollment_ID_HEAP) = EID Then
-
+'Last Modified Date
             wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment).NumberFormat = "@"
             wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
             wsDb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.Contact_Attempt_Notes_HEAP
-''''''''Do we need a Canceled Date Set and Canceled Date interfaced
-            wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "CANCELED"
+'CANCELLED Date Set
+            wsDb.Cells(x, NexantEnrollments.CANCELLED_date_set_HEAP).NumberFormat = "@"
+            wsDb.Cells(x, NexantEnrollments.CANCELLED_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+            wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "CANCELLED"
             wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
             wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
             wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
@@ -65,7 +69,7 @@ If MsgBox("Cancelation Requires Management Approval, Has Approval Been Granted?"
     'Clear Results
     MsgBox "Form has been saved"
     Call Clear_HEAP_Click
-    MsgBox ("Project Has Been Canceled")
+    MsgBox ("Project Has Been Cancelled")
 Else
     Exit Sub
 End If
@@ -85,6 +89,33 @@ Private Sub Previous_Contact_Attempt_Number_HEAP_Change()
         Previous_Contact_Attempt_Notes_HEAP.Text = anote(ir - 1)
         
     End If
+End Sub
+
+
+Private Sub Schedule_Date_HEAP_Exit(ByVal Cancel As MSForms.ReturnBoolean)
+If Len(Schedule_Date_HEAP) = 8 And IsNumeric(Schedule_Date_HEAP) = True Or Schedule_Date_HEAP = "" Then
+Schedule_Date_HEAP.BackColor = &H80000005
+
+Else
+
+Schedule_Date_HEAP.BackColor = &HFF&
+MsgBox ("Schedule_Date_HEAP is Formatted Incorrectly")
+Cancel = True
+
+End If
+End Sub
+
+Private Sub Schedule_Time_HEAP_Exit(ByVal Cancel As MSForms.ReturnBoolean)
+If Len(Schedule_Time_HEAP) = 6 And IsNumeric(Schedule_Time_HEAP) = True Or Schedule_Time_HEAP = "" Then
+Schedule_Time_HEAP.BackColor = &H80000005
+
+Else
+
+Schedule_Time_HEAP.BackColor = &HFF&
+MsgBox ("Schedule_Time_HEAP is Formatted Incorrectly")
+Cancel = True
+
+End If
 End Sub
 
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
@@ -263,8 +294,8 @@ End If
 
 For x = 11 To wsDblr
     If wsDb.Cells(x, NexantEnrollments.Enrollment_ID_HEAP) = EID Then
-         wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Notes_HEAP) = Me.Contact_Attempt_Notes_HEAP
-         wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Type_HEAP) = Me.Contact_Attempt_Type_HEAP
+         'wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Notes_HEAP) = Me.Contact_Attempt_Notes_HEAP
+         'wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Type_HEAP) = Me.Contact_Attempt_Type_HEAP
          wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment).NumberFormat = "@"
          wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
          wsDb.Cells(x, NexantEnrollments.Comments_HEAP) = Me.Contact_Attempt_Notes_HEAP
@@ -290,6 +321,8 @@ For x = 11 To wsDblr
             wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now() + TimeValue("00:00:01")), "HHMMSS")
             wsDb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP).NumberFormat = "@"
             wsDb.Cells(x, NexantEnrollments.SCHEDULED_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now() + TimeValue("00:00:01")), "HHMMSS")
+            wsDb.Cells(x, NexantEnrollments.Schedule_Date_HEAP) = Me.Schedule_Date_HEAP
+            wsDb.Cells(x, NexantEnrollments.Schedule_Time_HEAP) = Me.Schedule_Time_HEAP
          End If
          
     End If
@@ -303,7 +336,17 @@ wsContacts.Cells(wsClr + 1, NexantContacts.HEAP_Contact_Attempt_Type) = Me.Conta
 wsContacts.Cells(wsClr + 1, NexantContacts.HEAP_Contact_Attempt_Notes) = Me.Contact_Attempt_Notes_HEAP
 wsContacts.Cells(wsClr + 1, NexantContacts.HEAP_Contact_DateTime).NumberFormat = "@"
 wsContacts.Cells(wsClr + 1, NexantContacts.HEAP_Contact_DateTime) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now() + TimeValue("00:00:01")), "HHMMSS")
+If wsClr = 1 Then
+wsContacts.Cells(wsClr + 1, NexantContacts.Contact_ID) = 10000
+Else
 wsContacts.Cells(wsClr + 1, NexantContacts.Contact_ID) = wsContacts.Cells(wsClr, NexantContacts.Contact_ID).Value + 1
+End If
+'"Discussion, No Scheduled Appt" and "Discussion, Scheduled Appt"
+If Me.Schedule_Date_HEAP = "" And Me.Contact_Attempt_Type_HEAP = "Left Message" Then
+    wsContacts.Cells(wsClr + 1, NexantContacts.HEAP_Contact_Response) = "Discussion, No Scheduled Appt"
+ElseIf Me.Schedule_Date_HEAP <> "" Then
+    wsContacts.Cells(wsClr + 1, NexantContacts.HEAP_Contact_Response).Value = "Discussion, Scheduled Appt"
+End If
 
 'Clear Results
 MsgBox "Form has been saved"
@@ -347,5 +390,4 @@ Private Sub UserForm_Activate()
     End With
 
 End Sub
-
 

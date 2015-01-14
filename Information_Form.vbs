@@ -17,6 +17,7 @@ Attribute VB_Exposed = False
 
 
 
+
 Private Sub Account_Number_Exit(ByVal Cancel As MSForms.ReturnBoolean)
 If Len(Account_Number) = 12 And IsNumeric(Account_Number) = True Then
 Account_Number.BackColor = &H80000005
@@ -385,12 +386,13 @@ End Sub
 Private Sub UserForm_Activate()
 
 Dim TimeandDate As String
-Dim Result As Double
+Dim Result As Variant
 Dim Enrollment_ID_ROSA As String
 Dim ColumnHeadings(46) As String
 Dim ColumnValues(46) As String
 Dim counter As Double
-Dim LastRow As String
+Dim LastRow As Double
+Dim LastRow2 As Double
 Dim HeadingOffset As Double
 
 HeadingOffset = 10
@@ -398,8 +400,15 @@ HeadingOffset = 10
 Enrollment_ID_ROSA = currentEnrollment
 
 If Enrollment_ID_ROSA <> "" Then
+
 LastRow = Cells(Rows.Count, 2).End(xlUp).row
+LastRow2 = Cells(Rows.Count, 3).End(xlUp).row
+On Error Resume Next
 Result = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range(Cells(11, NexantEnrollments.Enrollment_ID_ROSA), Cells(LastRow, NexantEnrollments.Enrollment_ID_ROSA)), 0) + HeadingOffset
+If Result = 0 Then
+
+Result = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range(Cells(11, NexantEnrollments.Enrollment_ID_HEAP), Cells(LastRow2, NexantEnrollments.Enrollment_ID_HEAP)), 0) + HeadingOffset
+End If
 
 'Result = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range("B1", "B" & Range("B" & Rows.Count).End(xlUp).Row), 0)
 Else

@@ -14,6 +14,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
+
 Private Sub Cancel_Load_Results_Click()
 Me.Hide
 frmProcessing.Show
@@ -22,9 +23,11 @@ End Sub
 Private Sub File_Load_HEAP_Click()
 Dim wbLoad As Workbook
 Dim wsLoad As Worksheet
+Dim ws2Load As Worksheet
 Dim fName As String
 Dim f2Name As String
 Set wsDb = Worksheets("Enrollments")
+Set ws2Db = Worksheets("Measures")
 Set wbDb = ActiveWorkbook
 Dim fs As Object
 Dim w As String
@@ -52,6 +55,7 @@ If fName = Me.Enrollment_ID_HEAP + "_assessments.xlsm" Then
 
         Set wbLoad = Workbooks.Open(Filename:=w)
         Set wsLoad = wbLoad.Worksheets("Enrollments")
+        Set ws2Load = wbLoad.Worksheets("Measures")
         'find row in Database for Enrollment ID
         For x = 11 To wsDblr
             If wsDb.Cells(x, NexantEnrollments.Enrollment_ID_HEAP) = Me.Enrollment_ID_HEAP Then
@@ -78,13 +82,16 @@ If fName = Me.Enrollment_ID_HEAP + "_assessments.xlsm" Then
                 wsDb.Cells(x, NexantEnrollments.Blower_door_post_test_HEAP).Value = wsLoad.Cells(11, NexantEnrollments.Blower_door_post_test_HEAP).Value
                 wsDb.Cells(x, NexantEnrollments.Air_Leakage_Rating_HEAP).Value = wsLoad.Cells(11, NexantEnrollments.Air_Leakage_Rating_HEAP).Value
                 wsDb.Cells(x, NexantEnrollments.Dog_or_Cat_Flag_HEAP).Value = wsLoad.Cells(11, NexantEnrollments.Dog_or_Cat_Flag_HEAP).Value
-                
-                wsDb.Cells(x, NexantEnrollments.FILE_NAME_HEAP) = f2Name
-                'Need to Add a Column for SITE_VISIT_FILE_HEAP
-                'wsDb.Cells(x, NexantEnrollments.SITE_VISIT_FILE_HEAP) = fName
+                'File Names
                 Me.Site_Visit_File_HEAP = fName
                 Me.FILE_NAME_HEAP = f2Name
+                wsDb.Cells(x, NexantEnrollments.FILE_NAME_HEAP) = f2Name
+                wsDb.Cells(x, NexantEnrollments.Site_Visit_File_HEAP) = fName
                 
+                'Measures This assumes that the Cell reference for enrollment ID in both Enrollment and Measure tab are identical
+                ws2Db.Range(ws2Db.Cells(x, NexantMeasures.Annual_CCF_Savings), ws2Db.Cells(x, NexantMeasures.VRM_Quantity)).Value = ws2Load.Range(ws2Load.Cells(11, NexantMeasures.Annual_CCF_Savings), ws2Load.Cells(11, NexantMeasures.VRM_Quantity)).Value
+                
+                'Set Dates and Status
                 wsDb.Cells(x, NexantEnrollments.SITE_WORK_COMPLETE_date_set_HEAP).NumberFormat = "@"
                 wsDb.Cells(x, NexantEnrollments.SITE_WORK_COMPLETE_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
                 wsDb.Cells(x, NexantEnrollments.COMPLETE_date_set_HEAP).NumberFormat = "@"
@@ -107,11 +114,11 @@ Else
 End If
 
 'Copy files to Directory
-fs.copyfile w, "C:\Users\bmcgary\Desktop\VBA Coding\Assessment Files" & "\" & fName
-fs.copyfile y, "C:\Users\bmcgary\Desktop\VBA Coding\Assessment Files" & "\" & f2Name
+fs.copyfile w, Application.ActiveWorkbook.Path & "\Assessment Files" & "\" & fName
+fs.copyfile y, Application.ActiveWorkbook.Path & "\Assessment Files" & "\" & f2Name
 
 Set fs = Nothing
-
+MsgBox ("The data has been uploaded and the documents saved to the drive")
 'Closes Audit File
 wbLoad.Close SaveChanges:=False
 Call UserForm_Activate
@@ -143,12 +150,9 @@ For x = 11 To wsDblr
             .AddItem wsDb.Cells(x, NexantEnrollments.Enrollment_ID_HEAP)
         End With
     
-    
     End If
 Next x
 
 End Sub
-
-
 
 

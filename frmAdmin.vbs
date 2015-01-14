@@ -44,8 +44,8 @@ End Sub
 
 Private Sub cmdReset_Click()
     txtEnrollment.Text = ""
-    cmdROSA.Enabled = False
-    cmdHeap.Enabled = False
+    'cmdROSA.Enabled = False
+    'cmdHeap.Enabled = False
     cmdInfo.Enabled = False
     cmdMeasure.Enabled = False
     cmdUsage.Enabled = False
@@ -101,13 +101,13 @@ Private Sub cmdSearch_Click()
                 lstEnrollments.Clear
                 If EnrollmentID = ROSAID Then
                     lstEnrollments.AddItem (Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_ROSA).Value + "-ROSA")
-                    cmdROSA.Enabled = True
-                    cmdHeap.Enabled = False
+                    'cmdROSA.Enabled = True
+                    'cmdHeap.Enabled = False
                 End If
                 If EnrollmentID = HEAPID Then
                     lstEnrollments.AddItem (Worksheets(ImportSheetName).Cells(i, NexantEnrollments.Enrollment_ID_HEAP).Value + "-HEAP")
-                    cmdHeap.Enabled = True
-                    cmdROSA.Enabled = False
+                    'cmdHeap.Enabled = True
+                    'cmdROSA.Enabled = False
                 End If
                 cmdInfo.Enabled = True
                 cmdMeasure.Enabled = True
@@ -133,17 +133,17 @@ Private Sub lstEnrollments_Click()
         cmdMeasure.Enabled = True
         cmdContextual.Enabled = True
         cmdInfo.Enabled = True
-        Select Case rh
-            Case "ROSA"
-                cmdHeap.Enabled = False
-                cmdROSA.Enabled = True
-
-            Case "HEAP"
-                cmdROSA.Enabled = False
-                cmdHeap.Enabled = True
-
-            Case Else
-        End Select
+'        Select Case rh
+'            Case "ROSA"
+'                cmdHeap.Enabled = False
+'                cmdROSA.Enabled = True
+'
+'            Case "HEAP"
+'                cmdROSA.Enabled = False
+'                cmdHeap.Enabled = True
+'
+'            Case Else
+'        End Select
     End If
 
     
@@ -166,8 +166,8 @@ Private Sub UserForm_Activate()
     Next i
     
     cmdInfo.Enabled = False
-    cmdROSA.Enabled = False
-    cmdHeap.Enabled = False
+    'cmdROSA.Enabled = False
+    'cmdHeap.Enabled = False
     cmdMeasure.Enabled = False
     cmdUsage.Enabled = False
     cmdContextual.Enabled = False

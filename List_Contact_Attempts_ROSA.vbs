@@ -15,6 +15,8 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
 
+
+
 Private Sub Cancel_Enrollment_ROSA_Click()
 
 Set wsDb = Worksheets("Enrollments")
@@ -38,12 +40,14 @@ If MsgBox("Cancelation Requires Management Approval, Has Approval Been Granted?"
 
     For x = 11 To wsDblr
         If wsDb.Cells(x, NexantEnrollments.Enrollment_ID_ROSA) = EID Then
-
+'Last Modified Date
             wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment).NumberFormat = "@"
             wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
             wsDb.Cells(x, NexantEnrollments.Comments_ROSA) = Me.Contact_Attempt_Notes_ROSA
-''''''''Do we need a Canceled Date Set and Canceled Date interfaced
-            wsDb.Cells(x, NexantEnrollments.Status_ROSA) = "CANCELED"
+'CANCELLED Date Set
+            wsDb.Cells(x, NexantEnrollments.CANCELLED_date_set_ROSA).NumberFormat = "@"
+            wsDb.Cells(x, NexantEnrollments.CANCELLED_date_set_ROSA) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
+            wsDb.Cells(x, NexantEnrollments.Status_ROSA) = "CANCELLED"
             wsDb.Cells(x, NexantEnrollments.Status_Date_ROSA).NumberFormat = "@"
             wsDb.Cells(x, NexantEnrollments.Status_Date_ROSA) = Format(LocalTimeToET(Now()), "YYYYMMDD")
             wsDb.Cells(x, NexantEnrollments.Status_Time_ROSA).NumberFormat = "@"
@@ -65,7 +69,7 @@ If MsgBox("Cancelation Requires Management Approval, Has Approval Been Granted?"
     'Clear Results
     MsgBox "Form has been saved"
     Call Clear_ROSA_Click
-    MsgBox ("Project Has Been Canceled")
+    MsgBox ("Project Has Been Cancelled")
 Else
     Exit Sub
 End If
@@ -85,6 +89,33 @@ Private Sub Previous_Contact_Attempt_Number_ROSA_Change()
         Previous_Contact_Attempt_Notes_ROSA.Text = anote(ir - 1)
         
     End If
+End Sub
+
+
+Private Sub Schedule_Date_ROSA_Exit(ByVal Cancel As MSForms.ReturnBoolean)
+If Len(Schedule_Date_ROSA) = 8 And IsNumeric(Schedule_Date_ROSA) = True Or Schedule_Date_ROSA = "" Then
+Schedule_Date_ROSA.BackColor = &H80000005
+
+Else
+
+Schedule_Date_ROSA.BackColor = &HFF&
+MsgBox ("Schedule_Date_ROSA is Formatted Incorrectly")
+Cancel = True
+
+End If
+End Sub
+
+Private Sub Schedule_Time_ROSA_Exit(ByVal Cancel As MSForms.ReturnBoolean)
+If Len(Schedule_Time_ROSA) = 6 And IsNumeric(Schedule_Time_ROSA) = True Or Schedule_Time_ROSA = "" Then
+Schedule_Time_ROSA.BackColor = &H80000005
+
+Else
+
+Schedule_Time_ROSA.BackColor = &HFF&
+MsgBox ("Schedule_Time_ROSA is Formatted Incorrectly")
+Cancel = True
+
+End If
 End Sub
 
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
@@ -263,8 +294,8 @@ End If
 
 For x = 11 To wsDblr
     If wsDb.Cells(x, NexantEnrollments.Enrollment_ID_ROSA) = EID Then
-         wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Notes_ROSA) = Me.Contact_Attempt_Notes_ROSA
-         wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Type_ROSA) = Me.Contact_Attempt_Type_ROSA
+         'wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Notes_ROSA) = Me.Contact_Attempt_Notes_ROSA
+         'wsDb.Cells(x, NexantEnrollments.First_Contact_Attempt_Type_ROSA) = Me.Contact_Attempt_Type_ROSA
          wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment).NumberFormat = "@"
          wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
          wsDb.Cells(x, NexantEnrollments.Comments_ROSA) = Me.Contact_Attempt_Notes_ROSA
@@ -290,6 +321,8 @@ For x = 11 To wsDblr
             wsDb.Cells(x, NexantEnrollments.Status_Time_ROSA) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now() + TimeValue("00:00:01")), "HHMMSS")
             wsDb.Cells(x, NexantEnrollments.SCHEDULED_date_set_ROSA).NumberFormat = "@"
             wsDb.Cells(x, NexantEnrollments.SCHEDULED_date_set_ROSA) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now() + TimeValue("00:00:01")), "HHMMSS")
+            wsDb.Cells(x, NexantEnrollments.Schedule_Date_ROSA) = Me.Schedule_Date_ROSA
+            wsDb.Cells(x, NexantEnrollments.Schedule_Time_ROSA) = Me.Schedule_Time_ROSA
          End If
          
     End If
@@ -303,7 +336,17 @@ wsContacts.Cells(wsClr + 1, NexantContacts.ROSA_Contact_Attempt_Type) = Me.Conta
 wsContacts.Cells(wsClr + 1, NexantContacts.ROSA_Contact_Attempt_Notes) = Me.Contact_Attempt_Notes_ROSA
 wsContacts.Cells(wsClr + 1, NexantContacts.ROSA_Contact_DateTime).NumberFormat = "@"
 wsContacts.Cells(wsClr + 1, NexantContacts.ROSA_Contact_DateTime) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now() + TimeValue("00:00:01")), "HHMMSS")
+If wsClr = 1 Then
+wsContacts.Cells(wsClr + 1, NexantContacts.Contact_ID) = 10000
+Else
 wsContacts.Cells(wsClr + 1, NexantContacts.Contact_ID) = wsContacts.Cells(wsClr, NexantContacts.Contact_ID).Value + 1
+End If
+'"Discussion, No Scheduled Appt" and "Discussion, Scheduled Appt"
+If Me.Schedule_Date_ROSA = "" And Me.Contact_Attempt_Type_ROSA = "Left Message" Then
+    wsContacts.Cells(wsClr + 1, NexantContacts.ROSA_Contact_Response) = "Discussion, No Scheduled Appt"
+ElseIf Me.Schedule_Date_ROSA <> "" Then
+    wsContacts.Cells(wsClr + 1, NexantContacts.ROSA_Contact_Response).Value = "Discussion, Scheduled Appt"
+End If
 
 'Clear Results
 MsgBox "Form has been saved"

@@ -18,6 +18,7 @@ Attribute VB_Exposed = False
 
 
 
+
 Private Sub cmdCancel_Click()
 Me.Hide
 frmAdmin.Show vbModeless
@@ -27,25 +28,31 @@ End Sub
 
 Private Sub UserForm_Activate()
 Dim TimeandDate As String
-Dim LastRow As String
-Dim Results As Double
+Dim Results As Variant
 Dim Enrollment_ID_ROSA As String
 Dim ColumnHeadings(46) As String
-'Dim currentEnrollment As String
 Dim ColumnValues(46) As String
 Dim counter As Double
-Dim HeadingOffset
+Dim LastRow As Double
+Dim LastRow2 As Double
+Dim HeadingOffset As Double
 
 HeadingOffset = 10
 
 Enrollment_ID_ROSA = currentEnrollment
 
 If Enrollment_ID_ROSA <> "" Then
+
 LastRow = Cells(Rows.Count, 2).End(xlUp).row
-
-'Results = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range("B1", "B" & Range("B" & Rows.Count).End(xlUp).Row), 0)
+LastRow2 = Cells(Rows.Count, 3).End(xlUp).row
+On Error Resume Next
 Results = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range(Cells(11, NexantEnrollments.Enrollment_ID_ROSA), Cells(LastRow, NexantEnrollments.Enrollment_ID_ROSA)), 0) + HeadingOffset
+If Results = 0 Then
 
+Results = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range(Cells(11, NexantEnrollments.Enrollment_ID_HEAP), Cells(LastRow2, NexantEnrollments.Enrollment_ID_HEAP)), 0) + HeadingOffset
+End If
+
+Results = Application.Match(Enrollment_ID_ROSA, Sheets("Enrollments").Range("B1", "B" & Range("B" & Rows.Count).End(xlUp).row), 0)
 Else
 
 End If

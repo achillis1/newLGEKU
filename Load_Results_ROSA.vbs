@@ -14,6 +14,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
+
 Private Sub Cancel_Load_Results_Click()
 Me.Hide
 frmProcessing.Show
@@ -81,16 +82,16 @@ If fName = Me.Enrollment_ID_ROSA + "_assessments.xlsm" Then
                 wsDb.Cells(x, NexantEnrollments.Blower_door_post_test_ROSA).Value = wsLoad.Cells(11, NexantEnrollments.Blower_door_post_test_ROSA).Value
                 wsDb.Cells(x, NexantEnrollments.Air_Leakage_Rating_ROSA).Value = wsLoad.Cells(11, NexantEnrollments.Air_Leakage_Rating_ROSA).Value
                 wsDb.Cells(x, NexantEnrollments.Dog_or_Cat_Flag_ROSA).Value = wsLoad.Cells(11, NexantEnrollments.Dog_or_Cat_Flag_ROSA).Value
-                
-                wsDb.Cells(x, NexantEnrollments.FILE_NAME_ROSA) = f2Name
-                
-                'Measures This assumes that the Cell reference for enrollment ID in both Enrollment and Measure tab are identical
-                'wsDb.Range(ws2Db.Cells(x, NexantMeasures.Annual_CCF_Savings), ws2Db.Cells(x, NexantMeasures.VRM_Quantity)).Value = ws2Load.Range(wsLoad.Cells(11, NexantEnrollments.Annual_CCF_Savings), ws2Load.Cells(11, NexantMeasures.VRM_Quantity)).Value
-                'Need to Add a Column for SITE_VISIT_FILE_ROSA
-                'wsDb.Cells(x, NexantEnrollments.SITE_VISIT_FILE_ROSA) = fName
+                'File Names
                 Me.Site_Visit_File_ROSA = fName
                 Me.FILE_NAME_ROSA = f2Name
+                wsDb.Cells(x, NexantEnrollments.FILE_NAME_ROSA) = f2Name
+                wsDb.Cells(x, NexantEnrollments.Site_Visit_File_ROSA) = fName
                 
+                'Measures This assumes that the Cell reference for enrollment ID in both Enrollment and Measure tab are identical
+                ws2Db.Range(ws2Db.Cells(x, NexantMeasures.Annual_CCF_Savings), ws2Db.Cells(x, NexantMeasures.VRM_Quantity)).Value = ws2Load.Range(ws2Load.Cells(11, NexantMeasures.Annual_CCF_Savings), ws2Load.Cells(11, NexantMeasures.VRM_Quantity)).Value
+                
+                'Set Dates and Status
                 wsDb.Cells(x, NexantEnrollments.SITE_WORK_COMPLETE_date_set_ROSA).NumberFormat = "@"
                 wsDb.Cells(x, NexantEnrollments.SITE_WORK_COMPLETE_date_set_ROSA) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
                 wsDb.Cells(x, NexantEnrollments.COMPLETE_date_set_ROSA).NumberFormat = "@"
@@ -113,11 +114,11 @@ Else
 End If
 
 'Copy files to Directory
-fs.copyfile w, "C:\Users\bmcgary\Desktop\VBA Coding\Assessment Files" & "\" & fName
-fs.copyfile y, "C:\Users\bmcgary\Desktop\VBA Coding\Assessment Files" & "\" & f2Name
+fs.copyfile w, Application.ActiveWorkbook.Path & "\Assessment Files" & "\" & fName
+fs.copyfile y, Application.ActiveWorkbook.Path & "\Assessment Files" & "\" & f2Name
 
 Set fs = Nothing
-
+MsgBox ("The data has been uploaded and the documents saved to the drive")
 'Closes Audit File
 wbLoad.Close SaveChanges:=False
 Call UserForm_Activate
