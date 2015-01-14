@@ -28,6 +28,12 @@ obj/
 _ReSharper*/
 Export Files/
 Import/
+toNexant/
+toNexantArchive/
+fromNexant/
+fromNexantArchive/
+Assessment Files - archived/
+Assessment Files - incoming/
 [Tt]est[Rr]esult*
 #ignore temporary Excel files
 ~*.xlsm
