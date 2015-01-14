@@ -53,7 +53,7 @@ If fName = Me.Enrollment_ID_HEAP + "_assessments.xlsm" Then
     If Left(f2Name, 12) = Me.Enrollment_ID_HEAP Then
         
 
-        Set wbLoad = Workbooks.Open(Filename:=w)
+        Set wbLoad = Workbooks.Open(filename:=w)
         Set wsLoad = wbLoad.Worksheets("Enrollments")
         Set ws2Load = wbLoad.Worksheets("Measures")
         'find row in Database for Enrollment ID

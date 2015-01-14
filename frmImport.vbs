@@ -1,10 +1,10 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmImport 
    Caption         =   "Import"
-   ClientHeight    =   1920
+   ClientHeight    =   3900
    ClientLeft      =   45
    ClientTop       =   375
-   ClientWidth     =   1755
+   ClientWidth     =   1860
    OleObjectBlob   =   "frmImport.frx":0000
    StartUpPosition =   1  'CenterOwner
 End
@@ -19,6 +19,10 @@ Private Sub cmdCancel_Click()
     frmServiceCenter.Show vbModeless
 End Sub
 
+Private Sub cmdImportFourFiles_Click()
+    Call importfourfiles
+End Sub
+
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
     If CloseMode = 0 Then
         Cancel = True
@@ -30,8 +34,57 @@ Private Sub cmdImport_Click()
     Call importfile
 End Sub
 
+Private Sub importfourfiles()
+    Dim FilesToOpen
+    Dim x As Integer
+    Dim filename(4) As String
+    Dim fullname(4) As String
+    
+    On Error GoTo ErrHandler
+    Application.ScreenUpdating = False
 
-Private Sub importfile()
+    
+    FilesToOpen = Application.GetOpenFilename _
+      (FileFilter:="Text Files (*.txt), *.txt", _
+      MultiSelect:=True, Title:="Text Files to Open")
+
+    If TypeName(FilesToOpen) = "Boolean" Then
+        MsgBox "No Files were selected"
+        GoTo ExitHandler
+    End If
+
+    If UBound(FilesToOpen) <> 4 Then
+        MsgBox "You must select 4 files in order to proceed."
+        GoTo ExitHandler
+    End If
+
+    For i = 1 To 4
+        pos = InStrRev(FilesToOpen(i), "\")
+        filename(i) = Right(FilesToOpen(i), Len(FilesToOpen(i)) - pos)
+        fullname(i) = CStr(FilesToOpen(i))
+    Next i
+    
+    Call findfile(filename, fullname, "DSM_ROSA_ENROLL_OUT.TXT")
+    Call findfile(filename, fullname, "DSM_ROSA_USAGE_OUT.TXT")
+    Call findfile(filename, fullname, "DSM_HEAP_ENROLL_OUT.TXT")
+    Call findfile(filename, fullname, "DSM_HEAP_ENROLL_OUT.TXT")
+    
+ExitHandler:
+    Application.ScreenUpdating = True
+    Exit Sub
+
+ErrHandler:
+    MsgBox err.Description
+    Resume ExitHandler
+End Sub
+Private Sub findfile(ByRef file() As String, ByRef fileopen() As String, ByVal str As String)
+    For i = 1 To 4
+        If file(i) = str Then
+            Call importfile(fileopen(i))
+        End If
+    Next i
+End Sub
+Private Sub importfile(ByVal filetoopen As String)
     Application.ScreenUpdating = False
     Application.EnableEvents = False
     
@@ -41,10 +94,10 @@ Private Sub importfile()
     Dim LineNum As Integer
     
     FileNum = FreeFile()
-    filetoopen = Application.GetOpenFilename("Text Files (*.txt), *.txt")
-    If filetoopen = False Then
-        Exit Sub
-    End If
+    'filetoopen = Application.GetOpenFilename("Text Files (*.txt), *.txt")
+'    If filetoopen = False Then
+'        Exit Sub
+'    End If
     
     LineNum = 0
     Open filetoopen For Input As #FileNum
@@ -242,7 +295,7 @@ EndLoop:
         Next i
         frmImportError.Show vbModeless
     Else
-        MsgBox "Import is completed."
+        MsgBox "Import " + ShortProgramName + ", " + OUTReportType + " is completed."
         frmImport.Hide
         frmServiceCenter.Show vbModelless
     End If
