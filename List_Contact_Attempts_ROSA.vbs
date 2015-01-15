@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} List_Contact_Attempts_ROSA 
    Caption         =   "List_Contact_Attempts_ROSA"
-   ClientHeight    =   7545
+   ClientHeight    =   8010
    ClientLeft      =   45
    ClientTop       =   375
    ClientWidth     =   15465
@@ -16,6 +16,11 @@ Attribute VB_Exposed = False
 
 
 
+
+
+Private Sub Auditor_Zone_ROSA_Change()
+
+End Sub
 
 Private Sub Cancel_Enrollment_ROSA_Click()
 
@@ -134,7 +139,7 @@ Private Sub Clear_ROSA_Click()
 'Clear Fields
         Enrollment_Listbox.Clear
         Call formreset
-        MsgBox "Form Cleared"
+        'MsgBox "Form Cleared"
 
 Call UserForm_Activate
 End Sub
@@ -168,8 +173,11 @@ Me.Enrollment_ID_ROSA = ""
         Me.Customer_Home_Phone = ""
         Me.Customer_mobile_phone = ""
         Me.Reason_for_audit = ""
+        Auditor_Region_ROSA = ""
+        Auditor_Zone_ROSA = ""
 End Sub
 Private Sub Enrollment_Listbox_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
+Dim ServiceZIP As Double
 
     Set wsDb = Worksheets("Enrollments")
     Set wsContacts = Worksheets("Contacts")
@@ -221,7 +229,11 @@ Private Sub Enrollment_Listbox_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
             Me.Customer_Home_Phone = wsDb.Cells(x, NexantEnrollments.Customer_Home_Phone)
             Me.Customer_mobile_phone = wsDb.Cells(x, NexantEnrollments.Customer_Home_Phone)
             Me.Reason_for_audit = wsDb.Cells(x, NexantEnrollments.Reason_for_audit)
-                 
+            
+            On Error Resume Next
+            ServiceZIP = Left(wsDb.Cells(x, NexantEnrollments.Service_Zipcode), 5)
+            Me.Auditor_Region_ROSA = Application.WorksheetFunction.VLookup(ServiceZIP, Worksheets("PM").Range("O:R"), 3, False)
+            Auditor_Zone_ROSA = Application.WorksheetFunction.VLookup(ServiceZIP, Worksheets("PM").Range("O:R"), 4, False)
             
         End If
     Next x
@@ -389,7 +401,7 @@ Private Sub UserForm_Activate()
     'EMAIL; MAIL; LEFT MESSAGE; NO ANSWER; VOICE MAIL; TEXT MESSAGE
     End With
 
-    Auditor_Name_ROSA.AddItem (Worksheets(PMSheetName).Cells(3, 7).Value)
-    Auditor_Name_ROSA.AddItem (Worksheets(PMSheetName).Cells(4, 7).Value)
+     AuditorListLength = Sheets("PM").Cells(Rows.Count, "L").End(xlUp).row - 2
+     Me.Auditor_Name_ROSA.List = Worksheets("PM").Range("L3", "L" & (3 + AuditorListLength)).Value
     
 End Sub

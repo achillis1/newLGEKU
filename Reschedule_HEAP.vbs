@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} Reschedule_HEAP 
    Caption         =   "Reschedule_HEAP"
-   ClientHeight    =   7005
+   ClientHeight    =   7665
    ClientLeft      =   45
    ClientTop       =   375
    ClientWidth     =   15240
@@ -13,6 +13,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
 
 
 
@@ -169,9 +170,11 @@ Me.Enrollment_ID_HEAP = ""
         Me.Customer_Home_Phone = ""
         Me.Customer_mobile_phone = ""
         Me.Reason_for_audit = ""
+        Auditor_Region_HEAP = ""
+        Auditor_Zone_HEAP = ""
 End Sub
 Private Sub Enrollment_Listbox_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
-
+Dim ServiceZIP As Double
     Set wsDb = Worksheets("Enrollments")
     Set wsContacts = Worksheets("Contacts")
     
@@ -222,7 +225,12 @@ Private Sub Enrollment_Listbox_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
             Me.Customer_Home_Phone = wsDb.Cells(x, NexantEnrollments.Customer_Home_Phone)
             Me.Customer_mobile_phone = wsDb.Cells(x, NexantEnrollments.Customer_Home_Phone)
             Me.Reason_for_audit = wsDb.Cells(x, NexantEnrollments.Reason_for_audit)
-                 
+             
+            On Error Resume Next
+            
+            ServiceZIP = Left(wsDb.Cells(x, NexantEnrollments.Service_Zipcode), 5)
+            Me.Auditor_Region_HEAP = Application.WorksheetFunction.VLookup(ServiceZIP, Worksheets("PM").Range("O:R"), 3, False)
+            Auditor_Zone_HEAP = Application.WorksheetFunction.VLookup(ServiceZIP, Worksheets("PM").Range("O:R"), 4, False)
             
         End If
     Next x
@@ -393,7 +401,10 @@ Private Sub UserForm_Activate()
         .AddItem "TEXT MESSAGE"
     'EMAIL; MAIL; LEFT MESSAGE; NO ANSWER; VOICE MAIL; TEXT MESSAGE
     End With
-
+    
+    AuditorListLength = Sheets("PM").Cells(Rows.Count, "L").End(xlUp).row - 2
+     Me.Auditor_Name_HEAP.List = Worksheets("PM").Range("L3", "L" & (3 + AuditorListLength)).Value
+     
 End Sub
 
 

@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} List_Contact_Attempts_HEAP 
    Caption         =   "List_Contact_Attempts_HEAP"
-   ClientHeight    =   7155
+   ClientHeight    =   7665
    ClientLeft      =   45
    ClientTop       =   375
    ClientWidth     =   15240
@@ -17,6 +17,15 @@ Attribute VB_Exposed = False
 
 
 
+
+
+Private Sub Auditor_Name_HEAP_Change()
+
+End Sub
+
+Private Sub Auditor_Region_Change()
+
+End Sub
 
 Private Sub Cancel_Enrollment_HEAP_Click()
 
@@ -169,8 +178,11 @@ Me.Enrollment_ID_HEAP = ""
         Me.Customer_Home_Phone = ""
         Me.Customer_mobile_phone = ""
         Me.Reason_for_audit = ""
+        Auditor_Region_HEAP = ""
+        Auditor_Zone_HEAP = ""
 End Sub
 Private Sub Enrollment_Listbox_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
+Dim ServiceZIP As Double
 
     Set wsDb = Worksheets("Enrollments")
     Set wsContacts = Worksheets("Contacts")
@@ -222,7 +234,13 @@ Private Sub Enrollment_Listbox_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
             Me.Customer_Home_Phone = wsDb.Cells(x, NexantEnrollments.Customer_Home_Phone)
             Me.Customer_mobile_phone = wsDb.Cells(x, NexantEnrollments.Customer_Home_Phone)
             Me.Reason_for_audit = wsDb.Cells(x, NexantEnrollments.Reason_for_audit)
-                 
+                
+            On Error Resume Next
+            
+            ServiceZIP = Left(wsDb.Cells(x, NexantEnrollments.Service_Zipcode), 5)
+            Me.Auditor_Region_HEAP = Application.WorksheetFunction.VLookup(ServiceZIP, Worksheets("PM").Range("O:R"), 3, False)
+            Auditor_Zone_HEAP = Application.WorksheetFunction.VLookup(ServiceZIP, Worksheets("PM").Range("O:R"), 4, False)
+            
             
         End If
     Next x
@@ -369,6 +387,7 @@ Private Sub UserForm_Activate()
         wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "PENDING" Then
             'push data from database to form
             'HEAP Scheduling
+                   
             With Enrollment_Listbox
                 .AddItem wsDb.Cells(x, NexantEnrollments.Enrollment_ID_HEAP)
             End With
@@ -377,7 +396,7 @@ Private Sub UserForm_Activate()
     Next x
     
     Me.Contact_Attempt_Type_HEAP.Clear
-    
+    Me.Auditor_Name_HEAP.Clear
     
     With Me.Contact_Attempt_Type_HEAP
         .AddItem ""
@@ -389,7 +408,11 @@ Private Sub UserForm_Activate()
         .AddItem "TEXT MESSAGE"
     'EMAIL; MAIL; LEFT MESSAGE; NO ANSWER; VOICE MAIL; TEXT MESSAGE
     End With
-    Auditor_Name_HEAP.AddItem (Worksheets(PMSheetName).Cells(3, 7).Value)
-    Auditor_Name_HEAP.AddItem (Worksheets(PMSheetName).Cells(4, 7).Value)
+    
+     AuditorListLength = Sheets("PM").Cells(Rows.Count, "L").End(xlUp).row - 2
+     Me.Auditor_Name_HEAP.List = Worksheets("PM").Range("L3", "L" & (3 + AuditorListLength)).Value
+     
+    
+          
 End Sub
 
