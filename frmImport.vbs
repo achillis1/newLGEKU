@@ -387,12 +387,23 @@ Private Sub writeimportdate(ByVal filetoopen As String)
     filetoopen1 = Right(filetoopen, Len(filetoopen) - pos)
     
     posret = InStr(1, filetoopen1, "_ret")
+    If posret = 0 Then
+    retdate = ""
+    rettime = ""
+    Else
     retdate = Mid(filetoopen1, posret + 4, 8)
     rettime = Mid(filetoopen1, posret + 13, 6)
+    End If
     
     posmod = InStr(1, filetoopen1, "_mod")
+    If posmod = 0 Then
+    moddate = ""
+    modtime = ""
+    Else
     moddate = Mid(filetoopen1, posmod + 4, 8)
     modtime = Mid(filetoopen1, posmod + 13, 6)
+    End If
+    
     
     postxt = InStr(1, filetoopen1, ".txt")
     filetoopen1 = Mid(filetoopen1, 1, postxt - 1)
@@ -612,6 +623,8 @@ Private Sub parseenrollment(ByRef x() As String, ByVal ir As Integer, ByVal pn A
         Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Status_Date_ROSA) = Format(LocalTimeToET(Now()), "YYYYMMDD")
         Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Status_Time_ROSA).NumberFormat = "@"
         Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Status_Time_ROSA) = Format(LocalTimeToET(Now()), "HHMMSS")
+        Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.RECEIVED_AT_VENDOR_date_set_ROSA).NumberFormat = "@"
+        Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.RECEIVED_AT_VENDOR_date_set_ROSA) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
         Worksheets(PMSheetName).Cells(PMROSAEnrollRow, InboundLastReadCol).NumberFormat = "@"
         Worksheets(PMSheetName).Cells(PMROSAEnrollRow, InboundLastReadCol) = Format(LocalTimeToET(Now()), "HHMMSS")
     
@@ -620,6 +633,8 @@ Private Sub parseenrollment(ByRef x() As String, ByVal ir As Integer, ByVal pn A
         Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
         Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
         Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "HHMMSS")
+        Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.RECEIVED_AT_VENDOR_date_set_HEAP).NumberFormat = "@"
+        Worksheets(ImportSheetName).Cells(ir, NexantEnrollments.RECEIVED_AT_VENDOR_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
         Worksheets(PMSheetName).Cells(PMHEAPEnrollRow, InboundLastReadCol).NumberFormat = "@"
         Worksheets(PMSheetName).Cells(PMHEAPEnrollRow, InboundLastReadCol) = Format(LocalTimeToET(Now()), "HHMMSS")
     End If

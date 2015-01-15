@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} List_Contact_Attempts_HEAP 
    Caption         =   "List_Contact_Attempts_HEAP"
-   ClientHeight    =   7005
+   ClientHeight    =   7155
    ClientLeft      =   45
    ClientTop       =   375
    ClientWidth     =   15240
@@ -389,6 +389,7 @@ Private Sub UserForm_Activate()
         .AddItem "TEXT MESSAGE"
     'EMAIL; MAIL; LEFT MESSAGE; NO ANSWER; VOICE MAIL; TEXT MESSAGE
     End With
-
+    Auditor_Name_HEAP.AddItem (Worksheets(PMSheetName).Cells(3, 7).Value)
+    Auditor_Name_HEAP.AddItem (Worksheets(PMSheetName).Cells(4, 7).Value)
 End Sub
 

@@ -15,6 +15,7 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
 
+
 Private Sub Cancel_Load_Results_Click()
 Me.Hide
 frmProcessing.Show
@@ -83,10 +84,10 @@ If fName = Me.Enrollment_ID_HEAP + "_assessments.xlsm" Then
                 wsDb.Cells(x, NexantEnrollments.Air_Leakage_Rating_HEAP).Value = wsLoad.Cells(11, NexantEnrollments.Air_Leakage_Rating_HEAP).Value
                 wsDb.Cells(x, NexantEnrollments.Dog_or_Cat_Flag_HEAP).Value = wsLoad.Cells(11, NexantEnrollments.Dog_or_Cat_Flag_HEAP).Value
                 'File Names
-                Me.SITE_VISIT_FILE_HEAP = fName
+                Me.Site_Visit_File_HEAP = fName
                 Me.FILE_NAME_HEAP = f2Name
                 wsDb.Cells(x, NexantEnrollments.FILE_NAME_HEAP) = f2Name
-                wsDb.Cells(x, NexantEnrollments.SITE_VISIT_FILE_HEAP) = fName
+                wsDb.Cells(x, NexantEnrollments.Site_Visit_File_HEAP) = fName
                 
                 'Measures This assumes that the Cell reference for enrollment ID in both Enrollment and Measure tab are identical
                 ws2Db.Range(ws2Db.Cells(x, NexantMeasures.Annual_CCF_Savings), ws2Db.Cells(x, NexantMeasures.VRM_Quantity)).Value = ws2Load.Range(ws2Load.Cells(11, NexantMeasures.Annual_CCF_Savings), ws2Load.Cells(11, NexantMeasures.VRM_Quantity)).Value
@@ -97,7 +98,7 @@ If fName = Me.Enrollment_ID_HEAP + "_assessments.xlsm" Then
                 wsDb.Cells(x, NexantEnrollments.COMPLETE_date_set_HEAP).NumberFormat = "@"
                 wsDb.Cells(x, NexantEnrollments.COMPLETE_date_set_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now() + TimeValue("00:00:01")), "HHMMSS")
                 wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP).NumberFormat = "@"
-                wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now() + TimeValue("00:00:01")), "HHMMSS")
+                wsDb.Cells(x, NexantEnrollments.Status_Time_HEAP) = Format(LocalTimeToET(Now()), "HHMMSS")
                 wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP).NumberFormat = "@"
                 wsDb.Cells(x, NexantEnrollments.Status_Date_HEAP) = Format(LocalTimeToET(Now()), "YYYYMMDD")
                 wsDb.Cells(x, NexantEnrollments.Status_HEAP) = "COMPLETED"
@@ -114,13 +115,17 @@ Else
 End If
 
 'Copy files to Directory
-fs.copyfile w, Application.ActiveWorkbook.Path & "\Assessment Files" & "\" & fName
-fs.copyfile y, Application.ActiveWorkbook.Path & "\Assessment Files" & "\" & f2Name
+fs.copyfile w, Application.ActiveWorkbook.Path & "\Assessment Files - archived" & "\" & fName
+fs.copyfile y, Application.ActiveWorkbook.Path & "\Assessment Files - archived" & "\" & f2Name
 
 Set fs = Nothing
 MsgBox ("The data has been uploaded and the documents saved to the drive")
 'Closes Audit File
 wbLoad.Close SaveChanges:=False
+
+Kill w
+Kill y
+
 Call UserForm_Activate
 
 End Sub
@@ -139,7 +144,7 @@ wsDblr = wsDb.Cells(Rows.Count, NexantEnrollments.Enrollment_ID_HEAP).End(xlUp).
 Scheduled_Listbox.Clear
 Me.Enrollment_ID_HEAP = ""
 Me.FILE_NAME_HEAP = ""
-Me.SITE_VISIT_FILE_HEAP = ""
+Me.Site_Visit_File_HEAP = ""
 
 'find row in Database for Enrollment ID
 For x = 11 To wsDblr

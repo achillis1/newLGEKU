@@ -1004,7 +1004,7 @@ Business_Partner_Number_HEAP
 Comments_HEAP
 Dog_or_Cat_Flag_HEAP
 FILE_NAME_HEAP
-SITE_VISIT_FILE_HEAP
+Site_Visit_File_HEAP
 First_and_last_name_of_main_Auditor_HEAP
 Number_of_Auditors_HEAP
 Number_of_stories_above_grade_HEAP

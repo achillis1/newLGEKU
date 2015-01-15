@@ -17,6 +17,7 @@ Attribute VB_Exposed = False
 
 
 
+
 Private Sub cmdCancel_Click()
     Me.Hide
     frmServiceCenter.Show vbModeless
@@ -340,7 +341,7 @@ For k = 2 To nCont
     If wsCont.Cells(k, NexantContacts.Enrollment_ID_ROSA).Value <> "" Then
         If wsCont.Cells(k, NexantContacts.ROSA_Contact_Date_Interface).Value = "" Then
             Set Enroll_ID = wsDb.Range("B:B").Find(What:=wsCont.Cells(k, NexantContacts.Enrollment_ID_ROSA).Value, _
-                After:=wsDb.Range("B11"), LookIn:=xlValues, LookAt:=xlWhole, SearchOrder:=xlByRows, _
+                After:=wsDb.Range("B10"), LookIn:=xlValues, LookAt:=xlWhole, SearchOrder:=xlByRows, _
                 SearchDirection:=xlNext, MatchCase:=False, SearchFormat:=False)
             If Enroll_ID Is Nothing Then
                 wsCont.Cells(k, NexantContacts.ROSA_Contact_Date_Interface).Value = "ROSA ID not found"
@@ -348,14 +349,29 @@ For k = 2 To nCont
                 r = Enroll_ID.row
                 
                 wsROSA.Cells(jr, 7).Value = "PENDING"
-                wsROSA.Cells(jr, 8).Value = Left(wsCont.Cells(i, NexantContacts.ROSA_Contact_DateTime).Value, 8)
-                wsROSA.Cells(jr, 9).Value = Right(wsCont.Cells(i, NexantContacts.ROSA_Contact_DateTime).Value, 6)
-                wsROSA.Cells(jr, 11).Value = wsCont.Cells(i, NexantContacts.ROSA_Contact_Attempt_Type).Value
-                wsROSA.Cells(jr, 12).Value = wsCont.Cells(i, NexantContacts.ROSA_Contact_Attempt_Notes).Value
+                wsROSA.Cells(jr, 8).Value = Left(wsCont.Cells(k, NexantContacts.ROSA_Contact_DateTime).Value, 8)
+                wsROSA.Cells(jr, 9).Value = Right(wsCont.Cells(k, NexantContacts.ROSA_Contact_DateTime).Value, 6)
+                wsROSA.Cells(jr, 11).Value = wsCont.Cells(k, NexantContacts.ROSA_Contact_Attempt_Type).Value
+                wsROSA.Cells(jr, 12).Value = wsCont.Cells(k, NexantContacts.ROSA_Contact_Attempt_Notes).Value
                 
                 WriteStaticColumns jr, r, wsROSA, wsDb, "ROSA", 2
                 jr = jr + 1
                 wsCont.Cells(k, NexantContacts.ROSA_Contact_Date_Interface).Value = NexantLGEDateTimeNow
+            
+                'send FC if not already sent; store FC interfaced date
+                If wsDb.Cells(r, NexantEnrollments.FIRST_CONTACT_date_interfaced_ROSA).Value = "" Then
+                    WriteFC jr, r, wsROSA, wsDb, "ROSA", 2
+                    jr = jr + 1
+                    wsDb.Cells(r, NexantEnrollments.FIRST_CONTACT_date_interfaced_ROSA).Value = NexantLGEDateTimeNow
+                End If
+                
+                'send RAV if not already sent; store RAV interfaced date
+                If wsDb.Cells(r, NexantEnrollments.RECEIVED_AT_VENDOR_date_interfaced_ROSA).Value = "" Then
+                    WriteRAV jr, r, wsROSA, wsDb, "ROSA", 2
+                    jr = jr + 1
+                    wsDb.Cells(r, NexantEnrollments.RECEIVED_AT_VENDOR_date_interfaced_ROSA).Value = NexantLGEDateTimeNow
+                End If
+            
             End If
             
         End If
@@ -365,7 +381,7 @@ For k = 2 To nCont
     If wsCont.Cells(k, NexantContacts.Enrollment_ID_HEAP).Value <> "" Then
         If wsCont.Cells(k, NexantContacts.HEAP_Contact_Date_Interface).Value = "" Then
             Set Enroll_ID = wsDb.Range("C:C").Find(What:=wsCont.Cells(k, NexantContacts.Enrollment_ID_HEAP).Value, _
-                After:=wsDb.Range("C11"), LookIn:=xlValues, LookAt:=xlWhole, SearchOrder:=xlByRows, _
+                After:=wsDb.Range("C10"), LookIn:=xlValues, LookAt:=xlWhole, SearchOrder:=xlByRows, _
                 SearchDirection:=xlNext, MatchCase:=False, SearchFormat:=False)
             If Enroll_ID Is Nothing Then
                 wsCont.Cells(k, NexantContacts.HEAP_Contact_Date_Interface).Value = "HEAP ID not found"
@@ -373,14 +389,29 @@ For k = 2 To nCont
                 r = Enroll_ID.row
                 
                 wsHEAP.Cells(jh, 7).Value = "PENDING"
-                wsHEAP.Cells(jh, 8).Value = Left(wsCont.Cells(i, NexantContacts.HEAP_Contact_DateTime).Value, 8)
-                wsHEAP.Cells(jh, 9).Value = Right(wsCont.Cells(i, NexantContacts.HEAP_Contact_DateTime).Value, 6)
-                wsHEAP.Cells(jh, 11).Value = wsCont.Cells(i, NexantContacts.HEAP_Contact_Attempt_Type).Value
-                wsHEAP.Cells(jh, 12).Value = wsCont.Cells(i, NexantContacts.HEAP_Contact_Attempt_Notes).Value
+                wsHEAP.Cells(jh, 8).Value = Left(wsCont.Cells(k, NexantContacts.HEAP_Contact_DateTime).Value, 8)
+                wsHEAP.Cells(jh, 9).Value = Right(wsCont.Cells(k, NexantContacts.HEAP_Contact_DateTime).Value, 6)
+                wsHEAP.Cells(jh, 11).Value = wsCont.Cells(k, NexantContacts.HEAP_Contact_Attempt_Type).Value
+                wsHEAP.Cells(jh, 12).Value = wsCont.Cells(k, NexantContacts.HEAP_Contact_Attempt_Notes).Value
                 
                 WriteStaticColumns jh, r, wsHEAP, wsDb, "HEAP", 2
                 jh = jh + 1
                 wsCont.Cells(k, NexantContacts.HEAP_Contact_Date_Interface).Value = NexantLGEDateTimeNow
+            
+                'send FC if not already sent; store FC interfaced date
+                If wsDb.Cells(r, NexantEnrollments.FIRST_CONTACT_date_interfaced_HEAP).Value = "" Then
+                    WriteFC jh, r, wsHEAP, wsDb, "HEAP", 2
+                    jh = jh + 1
+                    wsDb.Cells(r, NexantEnrollments.FIRST_CONTACT_date_interfaced_HEAP).Value = NexantLGEDateTimeNow
+                End If
+                
+                'send RAV if not already sent; store RAV interfaced date
+                If wsDb.Cells(r, NexantEnrollments.RECEIVED_AT_VENDOR_date_interfaced_HEAP).Value = "" Then
+                    WriteRAV jh, r, wsHEAP, wsDb, "HEAP", 2
+                    jh = jh + 1
+                    wsDb.Cells(r, NexantEnrollments.RECEIVED_AT_VENDOR_date_interfaced_HEAP).Value = NexantLGEDateTimeNow
+                End If
+            
             End If
             
         End If
@@ -402,7 +433,7 @@ wsROSA.Cells(jr, 2).Value = jr - 2
 wsHEAP.Cells(jh, 1).Value = 3
 wsHEAP.Cells(jh, 2).Value = jh - 2
 
-tnow = NexantLGEDateTimeNow
+tnow = Replace(NexantLGEDateTimeNow, ":", "-")
 
 Dim m As Integer
 Open ActiveWorkbook.Path + "/fromNexant/dsm_rosa_status_in.txt" For Output As #1

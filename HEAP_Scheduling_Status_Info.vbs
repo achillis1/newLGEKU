@@ -73,7 +73,7 @@ For x = 11 To wsDblr
         Me.Schedule_Time_HEAP = wsDb.Cells(x, NexantEnrollments.Schedule_Time_HEAP)
         Me.Total_conditioned_square_footage_HEAP = wsDb.Cells(x, NexantEnrollments.Total_conditioned_square_footage_HEAP)
         Me.WO_Number_HEAP = wsDb.Cells(x, NexantEnrollments.WO_Number_HEAP)
-        Me.SITE_VISIT_FILE_HEAP = wsDb.Cells(x, NexantEnrollments.SITE_VISIT_FILE_HEAP)
+        Me.Site_Visit_File_HEAP = wsDb.Cells(x, NexantEnrollments.Site_Visit_File_HEAP)
         
 
         Exit Sub
@@ -168,7 +168,7 @@ For x = 11 To wsDblr
         wsDb.Cells(x, NexantEnrollments.Schedule_Time_HEAP) = Me.Schedule_Time_HEAP
         wsDb.Cells(x, NexantEnrollments.Total_conditioned_square_footage_HEAP) = Me.Total_conditioned_square_footage_HEAP
         wsDb.Cells(x, NexantEnrollments.WO_Number_HEAP) = Me.WO_Number_HEAP
-        wsDb.Cells(x, NexantEnrollments.SITE_VISIT_FILE_HEAP) = Me.SITE_VISIT_FILE_HEAP
+        wsDb.Cells(x, NexantEnrollments.Site_Visit_File_HEAP) = Me.Site_Visit_File_HEAP
 'Time stamp on Last updated
         wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment).NumberFormat = "@"
         wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment) = Format(LocalTimeToET(Now()), "YYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")

@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} List_Contact_Attempts_ROSA 
    Caption         =   "List_Contact_Attempts_ROSA"
-   ClientHeight    =   7455
+   ClientHeight    =   7545
    ClientLeft      =   45
    ClientTop       =   375
    ClientWidth     =   15465
@@ -389,4 +389,7 @@ Private Sub UserForm_Activate()
     'EMAIL; MAIL; LEFT MESSAGE; NO ANSWER; VOICE MAIL; TEXT MESSAGE
     End With
 
+    Auditor_Name_ROSA.AddItem (Worksheets(PMSheetName).Cells(3, 7).Value)
+    Auditor_Name_ROSA.AddItem (Worksheets(PMSheetName).Cells(4, 7).Value)
+    
 End Sub

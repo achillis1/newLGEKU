@@ -15,6 +15,7 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
 
+
 Private Sub Cancel_Load_Results_Click()
 Me.Hide
 frmProcessing.Show
@@ -97,7 +98,7 @@ If fName = Me.Enrollment_ID_ROSA + "_assessments.xlsm" Then
                 wsDb.Cells(x, NexantEnrollments.COMPLETE_date_set_ROSA).NumberFormat = "@"
                 wsDb.Cells(x, NexantEnrollments.COMPLETE_date_set_ROSA) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now() + TimeValue("00:00:01")), "HHMMSS")
                 wsDb.Cells(x, NexantEnrollments.Status_Time_ROSA).NumberFormat = "@"
-                wsDb.Cells(x, NexantEnrollments.Status_Time_ROSA) = Format(LocalTimeToET(Now()), "YYYYMMDD") + ":" + Format(LocalTimeToET(Now() + TimeValue("00:00:01")), "HHMMSS")
+                wsDb.Cells(x, NexantEnrollments.Status_Time_ROSA) = Format(LocalTimeToET(Now()), "HHMMSS")
                 wsDb.Cells(x, NexantEnrollments.Status_Date_ROSA).NumberFormat = "@"
                 wsDb.Cells(x, NexantEnrollments.Status_Date_ROSA) = Format(LocalTimeToET(Now()), "YYYYMMDD")
                 wsDb.Cells(x, NexantEnrollments.Status_ROSA) = "COMPLETED"
@@ -114,13 +115,22 @@ Else
 End If
 
 'Copy files to Directory
-fs.copyfile w, Application.ActiveWorkbook.Path & "\Assessment Files" & "\" & fName
-fs.copyfile y, Application.ActiveWorkbook.Path & "\Assessment Files" & "\" & f2Name
+fs.copyfile w, Application.ActiveWorkbook.Path & "\Assessment Files - archived" & "\" & fName
+fs.copyfile y, Application.ActiveWorkbook.Path & "\Assessment Files - archived" & "\" & f2Name
 
 Set fs = Nothing
 MsgBox ("The data has been uploaded and the documents saved to the drive")
+
 'Closes Audit File
 wbLoad.Close SaveChanges:=False
+
+Kill w
+Kill y
+'With New FileSystemObject
+'        .Deletefile w
+'        .Deletefile y
+'End With
+
 Call UserForm_Activate
 
 End Sub
