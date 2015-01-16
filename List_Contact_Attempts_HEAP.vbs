@@ -144,7 +144,7 @@ Private Sub Clear_HEAP_Click()
 'Clear Fields
         Enrollment_Listbox.Clear
         Call formreset
-        MsgBox "Form Cleared"
+        'MsgBox "Form Cleared"
 
 Call UserForm_Activate
 End Sub

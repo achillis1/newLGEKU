@@ -84,10 +84,10 @@ If fName = Me.Enrollment_ID_HEAP + "_assessments.xlsm" Then
                 wsDb.Cells(x, NexantEnrollments.Air_Leakage_Rating_HEAP).Value = wsLoad.Cells(11, NexantEnrollments.Air_Leakage_Rating_HEAP).Value
                 wsDb.Cells(x, NexantEnrollments.Dog_or_Cat_Flag_HEAP).Value = wsLoad.Cells(11, NexantEnrollments.Dog_or_Cat_Flag_HEAP).Value
                 'File Names
-                Me.Site_Visit_File_HEAP = fName
+                Me.SITE_VISIT_FILE_HEAP = fName
                 Me.FILE_NAME_HEAP = f2Name
                 wsDb.Cells(x, NexantEnrollments.FILE_NAME_HEAP) = f2Name
-                wsDb.Cells(x, NexantEnrollments.Site_Visit_File_HEAP) = fName
+                wsDb.Cells(x, NexantEnrollments.SITE_VISIT_FILE_HEAP) = fName
                 
                 'Measures This assumes that the Cell reference for enrollment ID in both Enrollment and Measure tab are identical
                 ws2Db.Range(ws2Db.Cells(x, NexantMeasures.Annual_CCF_Savings), ws2Db.Cells(x, NexantMeasures.VRM_Quantity)).Value = ws2Load.Range(ws2Load.Cells(11, NexantMeasures.Annual_CCF_Savings), ws2Load.Cells(11, NexantMeasures.VRM_Quantity)).Value
@@ -144,7 +144,7 @@ wsDblr = wsDb.Cells(Rows.Count, NexantEnrollments.Enrollment_ID_HEAP).End(xlUp).
 Scheduled_Listbox.Clear
 Me.Enrollment_ID_HEAP = ""
 Me.FILE_NAME_HEAP = ""
-Me.Site_Visit_File_HEAP = ""
+Me.SITE_VISIT_FILE_HEAP = ""
 
 'find row in Database for Enrollment ID
 For x = 11 To wsDblr

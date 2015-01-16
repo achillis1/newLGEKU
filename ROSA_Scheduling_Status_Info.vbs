@@ -78,7 +78,7 @@ For x = 11 To wsDblr
         Me.Schedule_Time_ROSA = wsDb.Cells(x, NexantEnrollments.Schedule_Time_ROSA)
         Me.Total_conditioned_square_footage_ROSA = wsDb.Cells(x, NexantEnrollments.Total_conditioned_square_footage_ROSA)
         Me.WO_Number_ROSA = wsDb.Cells(x, NexantEnrollments.WO_Number_ROSA)
-        Me.Site_Visit_File_ROSA = wsDb.Cells(x, NexantEnrollments.Site_Visit_File_ROSA)
+        Me.SITE_VISIT_FILE_ROSA = wsDb.Cells(x, NexantEnrollments.SITE_VISIT_FILE_ROSA)
         Exit Sub
         
     Else
@@ -172,7 +172,7 @@ For x = 11 To wsDblr
 'Time stamp on Last updated
         wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment).NumberFormat = "@"
         wsDb.Cells(x, NexantEnrollments.Last_Modified_Date_Enrollment) = Format(LocalTimeToET(Now()), "YYYMMDD") + ":" + Format(LocalTimeToET(Now()), "HHMMSS")
-        wsDb.Cells(x, NexantEnrollments.Site_Visit_File_ROSA) = Me.Site_Visit_File_ROSA
+        wsDb.Cells(x, NexantEnrollments.SITE_VISIT_FILE_ROSA) = Me.SITE_VISIT_FILE_ROSA
         Exit Sub
         
     Else

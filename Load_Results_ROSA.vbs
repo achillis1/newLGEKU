@@ -84,10 +84,10 @@ If fName = Me.Enrollment_ID_ROSA + "_assessments.xlsm" Then
                 wsDb.Cells(x, NexantEnrollments.Air_Leakage_Rating_ROSA).Value = wsLoad.Cells(11, NexantEnrollments.Air_Leakage_Rating_ROSA).Value
                 wsDb.Cells(x, NexantEnrollments.Dog_or_Cat_Flag_ROSA).Value = wsLoad.Cells(11, NexantEnrollments.Dog_or_Cat_Flag_ROSA).Value
                 'File Names
-                Me.Site_Visit_File_ROSA = fName
+                Me.SITE_VISIT_FILE_ROSA = fName
                 Me.FILE_NAME_ROSA = f2Name
                 wsDb.Cells(x, NexantEnrollments.FILE_NAME_ROSA) = f2Name
-                wsDb.Cells(x, NexantEnrollments.Site_Visit_File_ROSA) = fName
+                wsDb.Cells(x, NexantEnrollments.SITE_VISIT_FILE_ROSA) = fName
                 
                 'Measures This assumes that the Cell reference for enrollment ID in both Enrollment and Measure tab are identical
                 ws2Db.Range(ws2Db.Cells(x, NexantMeasures.Annual_CCF_Savings), ws2Db.Cells(x, NexantMeasures.VRM_Quantity)).Value = ws2Load.Range(ws2Load.Cells(11, NexantMeasures.Annual_CCF_Savings), ws2Load.Cells(11, NexantMeasures.VRM_Quantity)).Value
@@ -149,7 +149,7 @@ wsDblr = wsDb.Cells(Rows.Count, NexantEnrollments.Enrollment_ID_ROSA).End(xlUp).
 Scheduled_Listbox.Clear
 Me.Enrollment_ID_ROSA = ""
 Me.FILE_NAME_ROSA = ""
-Me.Site_Visit_File_ROSA = ""
+Me.SITE_VISIT_FILE_ROSA = ""
 
 'find row in Database for Enrollment ID
 For x = 11 To wsDblr
